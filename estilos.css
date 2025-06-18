@@ -9,11 +9,11 @@
 :root {
     --font-base: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     --color-text: #2c3e50;
-    --color-bg: #f4f6f8;
+    --color-bg: #0975e2;
     --color-bg-alt: #ffffff;
-    --color-primary: #3498db;
+    --color-primary: #bcdb34;
     --color-primary-hover: #2980b9;
-    --color-border: #ccc;
+    --color-border: #ec0808;
     --shadow-base: 0 8px 20px rgba(0, 0, 0, 0.08);
     --radius: 12px;
     --transition: 0.3s ease;
