@@ -32,8 +32,6 @@
         return $precio;
     }
 
-
-
     $backgroundColor = "white";
     if (isset($_REQUEST["anios"])) {
         $backgroundColor = obtenerColorFondo($_REQUEST["anios"]);
@@ -46,6 +44,7 @@
     </style>
 </head>
 <body>
+
 <?php
 if (isset($_REQUEST["nombre"]) && isset($_REQUEST["anios"])) {
     $nombre = $_REQUEST["nombre"];
@@ -64,21 +63,36 @@ if (isset($_REQUEST["nombre"]) && isset($_REQUEST["anios"])) {
     } else {
         echo "<p>Por favor, ingrese un número válido en años.</p>";
     }
+
+    $funciondescuento = descuento($anios);
+    echo "<p>El precio de su entrada es: $funciondescuento</p>";
 } else {
     echo "<p>No se recibieron los datos.</p>";
 }
-
-$funciondescuento=descuento($anios);
-echo "<p>el precio de su entrada es: $funciondescuento</p>";
 ?>
 
 <button class="back-to-top" onclick="scrollToTop()">Volver al inicio</button>
 
-<script>
-  function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-</script>
+<button class="back-button" onclick="window.history.back()">Volver atrás</button>
 
+<script>
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.addEventListener('scroll', function () {
+        const button = document.querySelector('.back-to-top');
+        if (window.scrollY > 300) {
+            button.style.display = 'block';
+        } else {
+            button.style.display = 'none';
+        }
+    });
+
+    window.addEventListener('load', function () {
+        const button = document.querySelector('.back-to-top');
+        button.style.display = 'none';
+    });
+</script>
 </body>
 </html>
