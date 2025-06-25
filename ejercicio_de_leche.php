@@ -1,7 +1,6 @@
 <?php
 $listacompras = ["pan", "leche", "huevos", "arroz", "pollo"];
 
-// Agregar productos antes de mostrar
 $listacompras[] = "queso";
 $listacompras[] = "tomate";
 
