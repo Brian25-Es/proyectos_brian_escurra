@@ -16,3 +16,5 @@ if (in_array("leche", $listacompras)) {
 } else {
     echo "<p>leche no están en la lista de compras.</p>";
 }
+
+?>
