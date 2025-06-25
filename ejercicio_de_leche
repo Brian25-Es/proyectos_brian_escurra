@@ -1,20 +1,22 @@
 <?php
 $listacompras = ["pan", "leche", "huevos", "arroz", "pollo"];
 
-echo "<h1>Lista de Compras</h1>";
-foreach ($listacompras as $indice => $producto) {
-    echo "<p>Producto " . ($indice + 1) . ": " . $producto . "</p>";
-}
-
+// Agregar productos antes de mostrar
 $listacompras[] = "queso";
 $listacompras[] = "tomate";
 
-echo "<br>total de productos:". count($listacompras) ."</br>";
+echo "<h1>Lista de Compras</h1>";
+echo "<ul>";
+foreach ($listacompras as $indice => $producto) {
+    echo "<li>Producto " . ($indice + 1) . ": " . $producto . "</li>";
+}
+echo "</ul>";
+
+echo "<p>Total de productos: " . count($listacompras) . "</p>";
 
 if (in_array("leche", $listacompras)) {
-    echo "<p>leche están en la lista de compras.</p>";
+    echo "<p>Leche está en la lista de compras.</p>";
 } else {
-    echo "<p>leche no están en la lista de compras.</p>";
+    echo "<p>Leche no está en la lista de compras.</p>";
 }
-
 ?>
