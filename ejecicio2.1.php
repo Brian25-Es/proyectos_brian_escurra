@@ -71,5 +71,14 @@ if (isset($_REQUEST["nombre"]) && isset($_REQUEST["anios"])) {
 $funciondescuento=descuento($anios);
 echo "<p>el precio de su entrada es: $funciondescuento</p>";
 ?>
+
+<button class="back-to-top" onclick="scrollToTop()">Volver al inicio</button>
+
+<script>
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+
 </body>
 </html>
