@@ -23,8 +23,8 @@
 
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: var(--color-bg);
-    color: var(--color-text);
+    background-color: #4a69bd;
+    color: #000000;
     padding: 40px;
     font-size: 16px;
     line-height: 1.6;
@@ -39,9 +39,10 @@ h2, h3 {
 .tabla-estudiantes {
     width: 100%;
     border-collapse: collapse;
-    background-color: var(--color-white);
-    box-shadow: var(--shadow);
-    border-radius: var(--radius);
+    background-color: #ffee00;
+    box-shadow: #e5ff00;
+    border-radius: #{--radius};
+    margin-top: 20px;
     overflow: hidden;
     transition: var(--transition);
 }
