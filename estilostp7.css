@@ -38,69 +38,73 @@ h2, h3 {
 
 .tabla-estudiantes {
     width: 100%;
-    border-collapse: collapse;
-    background-color: #ffee00;
-    box-shadow: #e5ff00;
-    border-radius: #{--radius};
-    margin-top: 20px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: var(--color-white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
     overflow: hidden;
-    transition: var(--transition);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    font-size: 15px;
+    transition: box-shadow 0.3s ease;
 }
 
-.tabla-estudiantes th, .tabla-estudiantes td {
-    padding: 16px;
-    text-align: center;
-    border-bottom: 1px solid var(--border-color);
+.tabla-estudiantes thead {
+    background-color: var(--color-primary);
+    color: var(--color-white);
 }
 
 .tabla-estudiantes th {
-    background-color: var(--color-primary);
-    color: var(--color-white);
+    padding: 18px 20px;
+    text-align: left;
     font-weight: 600;
-    font-size: 15px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-size: 14px;
+    border-bottom: 2px solid var(--color-secondary);
 }
 
 .tabla-estudiantes td {
-    background-color: var(--color-white);
-    font-size: 15px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--color-text);
+    vertical-align: middle;
 }
 
-.tabla-estudiantes tr:nth-child(even) td {
+.tabla-estudiantes tbody tr:nth-child(even) td {
     background-color: var(--color-highlight);
 }
 
-.tabla-estudiantes tr:hover td {
-    background-color: var(--color-accent);
-    color: var(--color-white);
+.tabla-estudiantes tbody tr:hover td {
+    background-color: #dff6f0;
+    color: #1e272e;
+    cursor: default;
+    transition: background-color 0.3s ease;
 }
 
-.mejor-estudiante {
-    margin-top: 40px;
-    padding: 24px 32px;
-    background-color: var(--color-success);
-    color: var(--color-white);
-    border-radius: var(--radius);
-    font-weight: 500;
-    font-size: 17px;
-    box-shadow: var(--shadow);
-    max-width: 100%;
-    width: fit-content;
+/* Esquinas redondeadas solo arriba */
+.tabla-estudiantes thead tr:first-child th:first-child {
+    border-top-left-radius: var(--radius);
+}
+.tabla-estudiantes thead tr:first-child th:last-child {
+    border-top-right-radius: var(--radius);
 }
 
+/* Mobile: Scroll horizontal */
 @media (max-width: 768px) {
-    body {
-        padding: 20px;
+    .tabla-estudiantes {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
     }
 
     .tabla-estudiantes th, .tabla-estudiantes td {
-        padding: 12px;
+        padding: 12px 16px;
         font-size: 14px;
     }
+}
 
     .mejor-estudiante {
         font-size: 15px;
         padding: 20px;
     }
-}
