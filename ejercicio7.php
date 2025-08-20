@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Reporte de Estudiantes</title>
     <link rel="stylesheet" href="estilostp7.css">
+    <p>
+        <input type="submit" value="Introducir Alumno" onclick="location.href='formulario7.html'">
+    </p>
 </head>
 <body>
 <?php
