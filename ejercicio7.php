@@ -31,10 +31,10 @@ echo
 <head>
     <meta charset='UTF-8'>
     <title>Reporte de Estudiantes</title>
-    <link rel="stylesheet" href="estilostp7.css">
+    <link rel='stylesheet' href='estilostp7.css'>
 </head>
 <body>
-    <h2>Reporte de Estudiantes</h2>
+    <h2>📋 Reporte de Estudiantes</h2>
     <table class='tabla-estudiantes'>
         <tr>
             <th>ID</th>
