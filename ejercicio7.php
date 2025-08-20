@@ -5,9 +5,8 @@
     <title>Reporte de Estudiantes</title>
     <link rel="stylesheet" href="estilostp7.css">
 </head>
-
 <body>
-    <?php
+<?php
 
 $estudiantes = [
     "est001" => [
@@ -36,15 +35,18 @@ function calcularPromedio($notas) {
 
 echo "<h2>📋 Reporte de Estudiantes</h2>";
 
-echo "<table border='1' cellpadding='10' cellspacing='0'>";
-echo "<tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Edad</th>
-        <th>Carrera</th>
-        <th>Notas</th>
-        <th>Promedio</th>
-      </tr>";
+echo "<table class='tabla-estudiantes'>";
+echo "<thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>Carrera</th>
+            <th>Notas</th>
+            <th>Promedio</th>
+        </tr>
+      </thead>
+      <tbody>";
 
 $mejorPromedio = 0;
 $mejorEstudiante = "";
@@ -67,10 +69,10 @@ foreach ($estudiantes as $id => $estudiante) {
     }
 }
 
-echo "</table>";
+echo "</tbody></table>";
 
 echo "<h3>🏆 Mejor Estudiante</h3>";
-echo "<p><strong>Nombre:</strong> $mejorEstudiante<br>";
+echo "<p class='mejor-estudiante'><strong>Nombre:</strong> $mejorEstudiante<br>";
 echo "<strong>Promedio:</strong> " . number_format($mejorPromedio, 2) . "</p>";
 
 ?>
