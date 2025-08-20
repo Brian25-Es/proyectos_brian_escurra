@@ -25,43 +25,53 @@ function calcularPromedio($notas) {
     return count($notas) ? array_sum($notas) / count($notas) : 0;
 }
 
-echo "<h2>📋 Reporte de Estudiantes</h2>";
-
-echo "<table border='1' cellpadding='10' cellspacing='0'>";
-echo "<tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Edad</th>
-        <th>Carrera</th>
-        <th>Notas</th>
-        <th>Promedio</th>
-      </tr>";
+echo 
+<!DOCTYPE html>
+<html lang='es'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Reporte de Estudiantes</title>
+    <link rel='stylesheet' href='estilostp7.css'>
+</head>
+<body>
+    <h2>📋 Reporte de Estudiantes</h2>
+    <table class='tabla-estudiantes'>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>Carrera</th>
+            <th>Notas</th>
+            <th>Promedio</th>
+        </tr>
+;
 
 $mejorPromedio = 0;
 $mejorEstudiante = "";
 
 foreach ($estudiantes as $id => $estudiante) {
     $promedio = calcularPromedio($estudiante["notas"]);
-    
-    echo "<tr>";
-    echo "<td>$id</td>";
-    echo "<td>{$estudiante['nombre']}</td>";
-    echo "<td>{$estudiante['edad']}</td>";
-    echo "<td>{$estudiante['carrera']}</td>";
-    echo "<td>" . implode(", ", $estudiante['notas']) . "</td>";
-    echo "<td>" . number_format($promedio, 2) . "</td>";
-    echo "</tr>";
-    
+    echo "<tr>
+            <td>$id</td>
+            <td>{$estudiante['nombre']}</td>
+            <td>{$estudiante['edad']}</td>
+            <td>{$estudiante['carrera']}</td>
+            <td>" . implode(", ", $estudiante['notas']) . "</td>
+            <td>" . number_format($promedio, 2) . "</td>
+          </tr>";
     if ($promedio > $mejorPromedio) {
         $mejorPromedio = $promedio;
         $mejorEstudiante = $estudiante["nombre"];
     }
 }
 
-echo "</table>";
-
-echo "<h3>🏆 Mejor Estudiante</h3>";
-echo "<p><strong>Nombre:</strong> $mejorEstudiante<br>";
-echo "<strong>Promedio:</strong> " . number_format($mejorPromedio, 2) . "</p>";
-
+echo "
+    </table>
+    <div class='mejor-estudiante'>
+        <h3>🏆 Mejor Estudiante</h3>
+        <p><strong>Nombre:</strong> $mejorEstudiante</p>
+        <p><strong>Promedio:</strong> " . number_format($mejorPromedio, 2) . "</p>
+    </div>
+</body>
+</html>";
 ?>
