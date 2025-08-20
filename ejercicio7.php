@@ -1,4 +1,13 @@
-<?php
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Estudiantes</title>
+    <link rel="stylesheet" href="estilostp7.css">
+</head>
+
+<body>
+    <?php
 
 $estudiantes = [
     "est001" => [
@@ -65,3 +74,5 @@ echo "<p><strong>Nombre:</strong> $mejorEstudiante<br>";
 echo "<strong>Promedio:</strong> " . number_format($mejorPromedio, 2) . "</p>";
 
 ?>
+</body>
+</html>
