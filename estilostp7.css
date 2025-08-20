@@ -82,7 +82,6 @@ h2, h3 {
     transition: background-color 0.3s ease;
 }
 
-/* Esquinas redondeadas solo arriba */
 .tabla-estudiantes thead tr:first-child th:first-child {
     border-top-left-radius: var(--radius);
 }
@@ -90,7 +89,6 @@ h2, h3 {
     border-top-right-radius: var(--radius);
 }
 
-/* Mobile: Scroll horizontal */
 @media (max-width: 768px) {
     .tabla-estudiantes {
         display: block;
