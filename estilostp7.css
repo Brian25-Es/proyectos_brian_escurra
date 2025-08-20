@@ -1,74 +1,91 @@
-* {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+:root {
+    --color-bg: #f5f7fa;
+    --color-white: #ffffff;
+    --color-text: #2d3436;
+    --color-primary: #1e3799;
+    --color-secondary: #4a69bd;
+    --color-accent: #38ada9;
+    --color-highlight: #f0f3f5;
+    --color-success: #2ecc71;
+    --border-color: #dfe6e9;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --radius: 6px;
+    --transition: 0.3s ease-in-out;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #f4f6f9, #e0eafc);
-    color: #2c3e50;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
     padding: 40px;
+    font-size: 16px;
     line-height: 1.6;
 }
 
 h2, h3 {
-    color: #2c3e50;
+    color: var(--color-primary);
     margin-bottom: 20px;
+    font-weight: 600;
 }
 
 .tabla-estudiantes {
     width: 100%;
     border-collapse: collapse;
-    background-color: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border-radius: 8px;
+    background-color: var(--color-white);
+    box-shadow: var(--shadow);
+    border-radius: var(--radius);
     overflow: hidden;
-    transition: box-shadow 0.3s ease;
-}
-
-.tabla-estudiantes:hover {
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
 }
 
 .tabla-estudiantes th, .tabla-estudiantes td {
-    padding: 16px 20px;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 16px;
     text-align: center;
-    font-size: 16px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .tabla-estudiantes th {
-    background-color: #2980b9;
-    color: #ffffff;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    font-weight: 600;
+    font-size: 15px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-.tabla-estudiantes tr:nth-child(even) {
-    background-color: #f9f9f9;
+.tabla-estudiantes td {
+    background-color: var(--color-white);
+    font-size: 15px;
 }
 
-.tabla-estudiantes tr:hover {
-    background-color: #ecf6ff;
+.tabla-estudiantes tr:nth-child(even) td {
+    background-color: var(--color-highlight);
+}
+
+.tabla-estudiantes tr:hover td {
+    background-color: var(--color-accent);
+    color: var(--color-white);
 }
 
 .mejor-estudiante {
     margin-top: 40px;
-    padding: 25px 30px;
-    background: linear-gradient(90deg, #27ae60, #2ecc71);
-    color: #ffffff;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: bold;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    display: inline-block;
-    animation: resaltar 1.5s ease-in-out;
-}
-
-@keyframes resaltar {
-    0% { transform: scale(0.95); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
+    padding: 24px 32px;
+    background-color: var(--color-success);
+    color: var(--color-white);
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 17px;
+    box-shadow: var(--shadow);
+    max-width: 100%;
+    width: fit-content;
 }
 
 @media (max-width: 768px) {
@@ -77,12 +94,12 @@ h2, h3 {
     }
 
     .tabla-estudiantes th, .tabla-estudiantes td {
-        padding: 12px 10px;
+        padding: 12px;
         font-size: 14px;
     }
 
     .mejor-estudiante {
-        font-size: 16px;
+        font-size: 15px;
         padding: 20px;
     }
 }
