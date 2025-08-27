@@ -12,7 +12,7 @@ if ($conn->connect_error) {
 }
 
 // sql to create table
-$sql = "CREATE TABLE MyGuests (
+$sql = "CREATE TABLE EJERCICIO7 (
 id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 nombre VARCHAR(30) NOT NULL,
 carrera VARCHAR(30) NOT NULL,
