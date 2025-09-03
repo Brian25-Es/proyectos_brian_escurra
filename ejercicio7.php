@@ -8,7 +8,7 @@
 <body>
 
 <p>
-    <input type="submit" value="Introducir Alumno" onclick="location.href='formulario7.html'">
+    <input type="submit" value="Introducir Alumno" onclick="location.href='introducirestudiante.html'">
 </p>
 
 <?php
