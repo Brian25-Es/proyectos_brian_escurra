@@ -2,7 +2,6 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Conexión
 $servername = "localhost";
 $username = "adminphp";
 $password = "TuContraseñaSegura";
@@ -13,7 +12,6 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Obtener estudiantes desde la tabla original
 $sql = "SELECT nombre, notas FROM EJERCICIO7";
 $result = $conn->query($sql);
 
@@ -24,11 +22,9 @@ if ($result->num_rows > 0) {
         $notas_array = json_decode($notas_json);
 
         if (!is_array($notas_array)) {
-            // Si json_decode falla, intenta con explode (por si está mal formateado)
             $notas_array = array_map('floatval', explode(',', trim($notas_json, "[]")));
         }
 
-        // Buscar el ID del estudiante en la nueva tabla
         $stmt = $conn->prepare("SELECT id FROM estudiantes WHERE nombre = ?");
         $stmt->bind_param("s", $nombre);
         $stmt->execute();
