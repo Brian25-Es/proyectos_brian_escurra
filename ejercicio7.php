@@ -1,3 +1,16 @@
+<?php
+$servername = "localhost";
+$username = "adminphp";
+$password = "TuContraseñaSegura";
+$dbname = "myDB";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+if ($conn->connect_error) {
+    die("Conexión fallida: " . $conn->connect_error);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
