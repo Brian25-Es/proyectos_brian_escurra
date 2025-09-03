@@ -32,11 +32,16 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $id_formateado = "est" . str_pad($row["id"], 3, "0", STR_PAD_LEFT);
         
+        $notas = json_decode($row["notas"], true);
+        if (!is_array($notas)) {
+            $notas = [];
+        }
+
         $estudiantes[$id_formateado] = [
             "nombre" => $row["nombre"],
             "edad" => $row["edad"],
             "carrera" => $row["carrera"],
-            "notas" => [$row["notas"]]
+            "notas" => $notas
         ];
     }
 } else {
