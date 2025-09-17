@@ -13,7 +13,6 @@ if ($conn->connect_error) {
 }
 
 
-
 if (isset($_POST['accion']) && $_POST['accion'] === 'insertar') {
     $nombre = $_POST['nombre'];
     $edad = (int)$_POST['edad'];
@@ -161,7 +160,7 @@ if ($result->num_rows > 0) {
         .mejor-estudiante { background-color: #ffeb3b; padding: 5px; border-radius: 5px; }
         form { margin-bottom: 20px; }
         input[type="text"], input[type="number"] { width: 200px; padding: 5px; }
-        input[type="submit"] { padding: 5px 10px; }
+        input[type="submit"], button { padding: 5px 10px; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -184,7 +183,7 @@ if (isset($_GET['editar'])) {
 ?>
 
 <h3><?= $accion==='editar' ? "✏️ Editar Estudiante" : "📝 Introducir Nuevo Estudiante" ?></h3>
-<form method="post" action="reporte_estudiantes.php">
+<form method="post" action="reporte_estudiantes.php" id="formEstudiante">
     <?php if ($accion==='editar'): ?>
         <input type="hidden" name="id" value="<?= $estudianteEditar['id'] ?>">
     <?php endif; ?>
@@ -203,7 +202,22 @@ if (isset($_GET['editar'])) {
     <input type="text" name="notas" required value="<?= $accion==='editar' ? implode(",", json_decode($estudianteEditar['notas'])) : '' ?>"><br><br>
 
     <input type="submit" value="<?= $accion==='editar' ? '💾 Guardar Cambios' : 'Guardar Estudiante' ?>">
+
+    <?php if ($accion==='editar'): ?>
+        <button type="button" onclick="cancelarEdicion()">Cancelar / Nuevo</button>
+    <?php endif; ?>
 </form>
+
+<script>
+function cancelarEdicion() {
+    const form = document.getElementById('formEstudiante');
+    form.reset();
+    form.querySelector('input[name="accion"]').value = 'insertar';
+    const idInput = form.querySelector('input[name="id"]');
+    if(idInput) idInput.remove();
+    document.querySelector('h3').textContent = "📝 Introducir Nuevo Estudiante";
+}
+</script>
 
 <table class="tabla-estudiantes">
     <thead>
