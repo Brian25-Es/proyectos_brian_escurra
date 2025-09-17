@@ -3,26 +3,46 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 $servername = "localhost";
-$username = "adminphp";
-$password = "TuContraseñaSegura";
-$dbname = "myDB";
+$username   = "adminphp";
+$password   = "TuContraseñaSegura";
+$dbname     = "myDB";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
-    die("Conexión fallida: " . $conn->connect_error);
+    die("❌ Conexión fallida: " . $conn->connect_error);
 }
 
-$sql = "SELECT id, nombre, edad, carrera, notas, promedios FROM EJERCICIO7";
+$sql = "
+    SELECT e.id, e.nombre, e.edad, c.nombre AS carrera, n.valor
+    FROM estudiantes e
+    JOIN carreras c ON e.carrera_id = c.id
+    LEFT JOIN notas n ON e.id = n.estudiante_id
+    ORDER BY e.id
+";
+
 $result = $conn->query($sql);
 
-function decodeNotas($notas_json) {
-    $notas = json_decode($notas_json, true);
-    return is_array($notas) ? $notas : [];
+$estudiantes = [];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $id = $row['id'];
+        if (!isset($estudiantes[$id])) {
+            $estudiantes[$id] = [
+                'nombre' => $row['nombre'],
+                'edad' => $row['edad'],
+                'carrera' => $row['carrera'],
+                'notas' => []
+            ];
+        }
+        if ($row['valor'] !== null) {
+            $estudiantes[$id]['notas'][] = $row['valor'];
+        }
+    }
 }
 
-$mejorPromedio = 0;
-$mejorEstudiante = "";
-
+function calcularPromedio($notas) {
+    return count($notas) ? array_sum($notas) / count($notas) : 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -35,8 +55,7 @@ $mejorEstudiante = "";
 
 <h2>📋 Reporte de Estudiantes</h2>
 
-<?php if ($result && $result->num_rows > 0): ?>
-
+<?php if (!empty($estudiantes)): ?>
 <table class="tabla-estudiantes">
     <thead>
         <tr>
@@ -49,27 +68,25 @@ $mejorEstudiante = "";
         </tr>
     </thead>
     <tbody>
-
-    <?php while ($row = $result->fetch_assoc()): 
-        $notasArray = decodeNotas($row['notas']);
-        $notasTexto = implode(", ", $notasArray);
-        $promedio = number_format($row['promedios'], 2);
-
-        if ($row['promedios'] > $mejorPromedio) {
-            $mejorPromedio = $row['promedios'];
-            $mejorEstudiante = $row['nombre'];
+    <?php 
+    $mejorPromedio = 0;
+    $mejorEstudiante = "";
+    foreach ($estudiantes as $id => $est): 
+        $promedio = calcularPromedio($est['notas']);
+        if ($promedio > $mejorPromedio) {
+            $mejorPromedio = $promedio;
+            $mejorEstudiante = $est['nombre'];
         }
     ?>
         <tr>
-            <td><?php echo htmlspecialchars($row['id']); ?></td>
-            <td><?php echo htmlspecialchars($row['nombre']); ?></td>
-            <td><?php echo htmlspecialchars($row['edad']); ?></td>
-            <td><?php echo htmlspecialchars($row['carrera']); ?></td>
-            <td><?php echo htmlspecialchars($notasTexto); ?></td>
-            <td><?php echo $promedio; ?></td>
+            <td><?php echo $id; ?></td>
+            <td><?php echo htmlspecialchars($est['nombre']); ?></td>
+            <td><?php echo htmlspecialchars($est['edad']); ?></td>
+            <td><?php echo htmlspecialchars($est['carrera']); ?></td>
+            <td><?php echo implode(", ", $est['notas']); ?></td>
+            <td><?php echo number_format($promedio, 2); ?></td>
         </tr>
-    <?php endwhile; ?>
-
+    <?php endforeach; ?>
     </tbody>
 </table>
 
@@ -80,14 +97,11 @@ $mejorEstudiante = "";
 </p>
 
 <?php else: ?>
-
 <p>No hay estudiantes registrados.</p>
-
 <?php endif; ?>
 
-<p><a href="introducirestudiante.html">Introducir nuevo estudiante</a></p>
-
-<?php $conn->close(); ?>
+<p><a href="introducirestudiante.html">➕ Introducir nuevo estudiante</a></p>
 
 </body>
 </html>
+<?php $conn->close(); ?>
