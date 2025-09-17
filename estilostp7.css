@@ -109,7 +109,7 @@ h2, h3 {
     border-spacing: 0;
     background-color: var(--color-white);
     border: 1px solid var(-)
-    border-bottom: 1px solid var(--border-color);
+    border-bottom 1px solid var(--border-color);
     color: var(--color-text);
     vertical-align: middle;
 }
@@ -119,13 +119,10 @@ h2, h3 {
 }
 
 .tabla-estudiantes tbody tr:hover td {
-    background-color: #df*,
-    *::before,
-    *::after {
+    background-color: #dfe6e9, ::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;}
-
 }
 
 
