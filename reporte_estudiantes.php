@@ -13,6 +13,7 @@ if ($conn->connect_error) {
 }
 
 
+
 if (isset($_POST['accion']) && $_POST['accion'] === 'insertar') {
     $nombre = $_POST['nombre'];
     $edad = (int)$_POST['edad'];
@@ -20,11 +21,39 @@ if (isset($_POST['accion']) && $_POST['accion'] === 'insertar') {
     $notas_in = $_POST['notas'];
 
     $notas_array = array_map('floatval', explode(',', $notas_in));
-    $promedio = count($notas_array) ? array_sum($notas_array) / count($notas_array) : 0;
-    $notas_json = json_encode($notas_array);
+    $promedio = count($notas_array) ? array_sum($notas_array)/count($notas_array) : 0;
 
-    $stmt = $conn->prepare("INSERT INTO EJERCICIO7 (nombre, edad, carrera, notas, promedios) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sissd", $nombre, $edad, $carrera, $notas_json, $promedio);
+    $stmt = $conn->prepare("SELECT id FROM carreras WHERE nombre=?");
+    $stmt->bind_param("s", $carrera);
+    $stmt->execute();
+    $stmt->bind_result($carrera_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if (!$carrera_id) {
+        $stmt = $conn->prepare("INSERT INTO carreras (nombre) VALUES (?)");
+        $stmt->bind_param("s", $carrera);
+        $stmt->execute();
+        $carrera_id = $stmt->insert_id;
+        $stmt->close();
+    }
+
+    $stmt = $conn->prepare("INSERT INTO estudiantes (nombre, edad, carrera_id) VALUES (?, ?, ?)");
+    $stmt->bind_param("sii", $nombre, $edad, $carrera_id);
+    $stmt->execute();
+    $estudiante_id = $stmt->insert_id;
+    $stmt->close();
+
+    $stmt = $conn->prepare("INSERT INTO notas (estudiante_id, valor) VALUES (?, ?)");
+    foreach ($notas_array as $nota) {
+        $stmt->bind_param("id", $estudiante_id, $nota);
+        $stmt->execute();
+    }
+    $stmt->close();
+
+    $notas_json = json_encode($notas_array);
+    $stmt = $conn->prepare("INSERT INTO EJERCICIO7 (id, nombre, edad, carrera, notas, promedios) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iisssd", $estudiante_id, $nombre, $edad, $carrera, $notas_json, $promedio);
     $stmt->execute();
     $stmt->close();
 
@@ -40,9 +69,37 @@ if (isset($_POST['accion']) && $_POST['accion'] === 'editar') {
     $notas_in = $_POST['notas'];
 
     $notas_array = array_map('floatval', explode(',', $notas_in));
-    $promedio = count($notas_array) ? array_sum($notas_array) / count($notas_array) : 0;
-    $notas_json = json_encode($notas_array);
+    $promedio = count($notas_array) ? array_sum($notas_array)/count($notas_array) : 0;
 
+    $stmt = $conn->prepare("SELECT id FROM carreras WHERE nombre=?");
+    $stmt->bind_param("s", $carrera);
+    $stmt->execute();
+    $stmt->bind_result($carrera_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if (!$carrera_id) {
+        $stmt = $conn->prepare("INSERT INTO carreras (nombre) VALUES (?)");
+        $stmt->bind_param("s", $carrera);
+        $stmt->execute();
+        $carrera_id = $stmt->insert_id;
+        $stmt->close();
+    }
+
+    $stmt = $conn->prepare("UPDATE estudiantes SET nombre=?, edad=?, carrera_id=? WHERE id=?");
+    $stmt->bind_param("siii", $nombre, $edad, $carrera_id, $id);
+    $stmt->execute();
+    $stmt->close();
+
+    $conn->query("DELETE FROM notas WHERE estudiante_id=$id");
+    $stmt = $conn->prepare("INSERT INTO notas (estudiante_id, valor) VALUES (?, ?)");
+    foreach ($notas_array as $nota) {
+        $stmt->bind_param("id", $id, $nota);
+        $stmt->execute();
+    }
+    $stmt->close();
+
+    $notas_json = json_encode($notas_array);
     $stmt = $conn->prepare("UPDATE EJERCICIO7 SET nombre=?, edad=?, carrera=?, notas=?, promedios=? WHERE id=?");
     $stmt->bind_param("sissdi", $nombre, $edad, $carrera, $notas_json, $promedio, $id);
     $stmt->execute();
@@ -54,6 +111,16 @@ if (isset($_POST['accion']) && $_POST['accion'] === 'editar') {
 
 if (isset($_GET['eliminar'])) {
     $id = (int)$_GET['eliminar'];
+    $stmt = $conn->prepare("DELETE FROM notas WHERE estudiante_id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $conn->prepare("DELETE FROM estudiantes WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
+
     $stmt = $conn->prepare("DELETE FROM EJERCICIO7 WHERE id=?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
@@ -116,9 +183,9 @@ if (isset($_GET['editar'])) {
 }
 ?>
 
-<h3><?= $accion === 'editar' ? "✏️ Editar Estudiante" : "📝 Introducir Nuevo Estudiante" ?></h3>
+<h3><?= $accion==='editar' ? "✏️ Editar Estudiante" : "📝 Introducir Nuevo Estudiante" ?></h3>
 <form method="post" action="reporte_estudiantes.php">
-    <?php if ($accion === 'editar'): ?>
+    <?php if ($accion==='editar'): ?>
         <input type="hidden" name="id" value="<?= $estudianteEditar['id'] ?>">
     <?php endif; ?>
     <input type="hidden" name="accion" value="<?= $accion ?>">
