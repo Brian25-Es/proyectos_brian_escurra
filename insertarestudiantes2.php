@@ -18,13 +18,9 @@ $carrera  = $_POST['carrera'];
 $notas_in = $_POST['notas'];
 
 $notas_array = array_map('floatval', explode(',', $notas_in));
-if (empty($notas_array)) {
-    die("❌ Error: No se ingresaron notas válidas.");
-}
-
 $promedio = array_sum($notas_array) / count($notas_array);
 
-$stmt = $conn->prepare("SELECT id FROM carreras WHERE nombre = ?");
+$stmt = $conn->prepare("SELECT id FROM carreras WHERE nombre=?");
 $stmt->bind_param("s", $carrera);
 $stmt->execute();
 $stmt->bind_result($carrera_id);
@@ -53,13 +49,13 @@ foreach ($notas_array as $nota) {
 $stmt->close();
 
 $notas_json = json_encode($notas_array);
-$stmt = $conn->prepare("INSERT INTO EJERCICIO7 (nombre, carrera, edad, notas, promedios) VALUES (?, ?, ?, ?, ?)");
-$stmt->bind_param("ssisd", $nombre, $carrera, $edad, $notas_json, $promedio);
+$stmt = $conn->prepare("INSERT INTO EJERCICIO7 (id, nombre, carrera, edad, notas, promedios) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("issisd", $estudiante_id, $nombre, $carrera, $edad, $notas_json, $promedio);
 $stmt->execute();
 $stmt->close();
 
-echo "<p>✅ Estudiante guardado en todas las tablas (carreras, estudiantes, notas y EJERCICIO7).</p>";
-echo "<button onclick=\"window.location.href='reporte_estudiantes.php'\">Ver Reporte</button>";
-
 $conn->close();
+
+header("Location: reporte_estudiantes.php");
+exit();
 ?>
