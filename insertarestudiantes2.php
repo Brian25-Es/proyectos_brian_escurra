@@ -22,6 +22,8 @@ if (empty($notas_array)) {
     die("❌ Error: No se ingresaron notas válidas.");
 }
 
+$promedio = array_sum($notas_array) / count($notas_array);
+
 $stmt = $conn->prepare("SELECT id FROM carreras WHERE nombre = ?");
 $stmt->bind_param("s", $carrera);
 $stmt->execute();
@@ -50,7 +52,13 @@ foreach ($notas_array as $nota) {
 }
 $stmt->close();
 
-echo "<p>✅ Estudiante y notas guardados correctamente.</p>";
+$notas_json = json_encode($notas_array);
+$stmt = $conn->prepare("INSERT INTO EJERCICIO7 (nombre, carrera, edad, notas, promedios) VALUES (?, ?, ?, ?, ?)");
+$stmt->bind_param("ssisd", $nombre, $carrera, $edad, $notas_json, $promedio);
+$stmt->execute();
+$stmt->close();
+
+echo "<p>✅ Estudiante guardado en todas las tablas (carreras, estudiantes, notas y EJERCICIO7).</p>";
 echo "<button onclick=\"window.location.href='reporte_estudiantes.php'\">Ver Reporte</button>";
 
 $conn->close();
