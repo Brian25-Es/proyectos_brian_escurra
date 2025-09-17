@@ -9,55 +9,37 @@ if ($conn->connect_error) {
     die("❌ Conexión fallida: " . $conn->connect_error);
 }
 
-$id = (int) $_GET['id'];
-
-$sql = "SELECT e.id, e.nombre, e.edad, c.nombre AS carrera
-        FROM estudiantes e
-        JOIN carreras c ON e.carrera_id = c.id
-        WHERE e.id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id);
-$stmt->execute();
-$result = $stmt->get_result();
+$id = intval($_GET['id']);
+$result = $conn->query("SELECT * FROM EJERCICIO7 WHERE id=$id");
 $estudiante = $result->fetch_assoc();
-$stmt->close();
-
-$notas = [];
-$res = $conn->query("SELECT valor FROM notas WHERE estudiante_id = $id");
-while ($row = $res->fetch_assoc()) {
-    $notas[] = $row['valor'];
-}
-
-$conn->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Editar Estudiante</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<h2>✏️ Editar Estudiante</h2>
+    <h2>✏️ Editar Estudiante</h2>
 
-<form action="actualizar_estudiante.php" method="post">
-    <input type="hidden" name="id" value="<?php echo $estudiante['id']; ?>">
+    <form method="post" action="update_estudiante.php">
+        <input type="hidden" name="id" value="<?= $estudiante['id'] ?>">
 
-    <label>Nombre:</label><br>
-    <input type="text" name="nombre" value="<?php echo htmlspecialchars($estudiante['nombre']); ?>" required><br><br>
+        <label>Nombre:</label>
+        <input type="text" name="nombre" value="<?= $estudiante['nombre'] ?>" required><br><br>
 
-    <label>Edad:</label><br>
-    <input type="number" name="edad" value="<?php echo $estudiante['edad']; ?>" required><br><br>
+        <label>Carrera:</label>
+        <input type="text" name="carrera" value="<?= $estudiante['carrera'] ?>" required><br><br>
 
-    <label>Carrera:</label><br>
-    <input type="text" name="carrera" value="<?php echo htmlspecialchars($estudiante['carrera']); ?>" required><br><br>
+        <label>Edad:</label>
+        <input type="number" name="edad" value="<?= $estudiante['edad'] ?>" required><br><br>
 
-    <label>Notas (separadas por coma):</label><br>
-    <input type="text" name="notas" value="<?php echo implode(", ", $notas); ?>" required><br><br>
+        <label>Notas (separadas por coma):</label>
+        <input type="text" name="notas" value="<?= $estudiante['notas'] ?>" required><br><br>
 
-    <input type="submit" value="Actualizar">
-</form>
-
-<br>
-<a href="reporte_estudiantes.php">⬅️ Volver al Reporte</a>
+        <button type="submit">💾 Guardar Cambios</button>
+    </form>
 </body>
 </html>

@@ -9,85 +9,86 @@ if ($conn->connect_error) {
     die("❌ Conexión fallida: " . $conn->connect_error);
 }
 
-$sql = "SELECT e.id, e.nombre, e.edad, c.nombre AS carrera
-        FROM estudiantes e
-        JOIN carreras c ON e.carrera_id = c.id";
+$sql = "SELECT * FROM EJERCICIO7";
 $result = $conn->query($sql);
-
-$estudiantes = [];
-while ($row = $result->fetch_assoc()) {
-    $id = $row['id'];
-    $estudiantes[$id] = [
-        'nombre'  => $row['nombre'],
-        'edad'    => $row['edad'],
-        'carrera' => $row['carrera'],
-        'notas'   => []
-    ];
-}
-
-$sql = "SELECT estudiante_id, valor FROM notas";
-$result = $conn->query($sql);
-while ($row = $result->fetch_assoc()) {
-    $estudiantes[$row['estudiante_id']]['notas'][] = $row['valor'];
-}
-
-$conn->close();
-
-function calcularPromedio($notas) {
-    return count($notas) > 0 ? array_sum($notas) / count($notas) : 0;
-}
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Reporte de Estudiantes</title>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
-        th, td { border: 1px solid black; padding: 8px; text-align: center; }
-        th { background-color: #f2f2f2; }
-        .acciones button { margin: 2px; padding: 5px 10px; cursor: pointer; }
-        .acciones form { display: inline; }
+        .acciones {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-editar {
+            background-color: var(--color-accent);
+            color: var(--color-white);
+        }
+        .btn-editar:hover {
+            background-color: #218c74;
+        }
+
+        .btn-eliminar {
+            background-color: #e74c3c;
+            color: var(--color-white);
+        }
+        .btn-eliminar:hover {
+            background-color: #c0392b;
+        }
     </style>
 </head>
 <body>
-<h2 style="text-align:center;">📋 Reporte de Estudiantes</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Edad</th>
-            <th>Carrera</th>
-            <th>Notas</th>
-            <th>Promedio</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($estudiantes as $id => $est): 
-        $promedio = calcularPromedio($est['notas']);
-    ?>
-    <tr>
-        <td><?php echo $id; ?></td>
-        <td><?php echo htmlspecialchars($est['nombre']); ?></td>
-        <td><?php echo htmlspecialchars($est['edad']); ?></td>
-        <td><?php echo htmlspecialchars($est['carrera']); ?></td>
-        <td><?php echo implode(", ", $est['notas']); ?></td>
-        <td><?php echo number_format($promedio, 2); ?></td>
-        <td class="acciones">
-            <form action="editar_estudiante.php" method="get">
-                <input type="hidden" name="id" value="<?php echo $id; ?>">
-                <button type="submit">✏️ Editar</button>
-            </form>
-            <form action="eliminar_estudiante.php" method="post" onsubmit="return confirm('¿Seguro que quieres eliminar este alumno?');">
-                <input type="hidden" name="id" value="<?php echo $id; ?>">
-                <button type="submit">🗑️ Borrar</button>
-            </form>
-        </td>
-    </tr>
-    <?php endforeach; ?>
-    </tbody>
-</table>
+    <h2>📋 Reporte de Estudiantes</h2>
+
+    <table class="tabla-estudiantes">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Carrera</th>
+                <th>Edad</th>
+                <th>Notas</th>
+                <th>Promedio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php if ($result->num_rows > 0): ?>
+            <?php while($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <td><?= $row["id"] ?></td>
+                    <td><?= $row["nombre"] ?></td>
+                    <td><?= $row["carrera"] ?></td>
+                    <td><?= $row["edad"] ?></td>
+                    <td><?= $row["notas"] ?></td>
+                    <td><?= number_format($row["promedios"], 2) ?></td>
+                    <td class="acciones">
+                        <a class="btn btn-editar" href="editar_estudiante.php?id=<?= $row['id'] ?>">Editar</a>
+                        <a class="btn btn-eliminar" href="eliminar_estudiante.php?id=<?= $row['id'] ?>" onclick="return confirm('¿Seguro que quieres eliminar este estudiante?')">Eliminar</a>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <tr><td colspan="7">No hay estudiantes registrados.</td></tr>
+        <?php endif; ?>
+        </tbody>
+    </table>
 </body>
 </html>
+
+<?php $conn->close(); ?>

@@ -65,7 +65,50 @@ h2, h3 {
 }
 
 .tabla-estudiantes td {
-    padding: 16px 20px;
+    padding: 16px 20px;*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color-bg: #f5f7fa;
+    --color-white: #ffffff;
+    --color-text: #000000;
+    --color-primary: #1e3799;
+    --color-secondary: #4a69bd;
+    --color-accent: #38ada9;
+    --color-highlight: #f0f3f5;
+    --color-success: #2ecc71;
+    --border-color: #dfe6e9;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --radius: 6px;
+    --transition: 0.3s ease-in-out;
+}
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #646774;
+    color: #000000;
+    padding: 40px;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+h2, h3 {
+    color: #000000;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.tabla-estudiantes {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: var(--color-white);
+    border: 1px solid var(-)
     border-bottom: 1px solid var(--border-color);
     color: var(--color-text);
     vertical-align: middle;
@@ -76,7 +119,52 @@ h2, h3 {
 }
 
 .tabla-estudiantes tbody tr:hover td {
-    background-color: #dff6f0;
+    background-color: #df*,
+    *::before,
+    *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;}
+
+}
+
+
+:root {
+    --color-bg: #f5f7fa;
+    --color-white: #ffffff;
+    --color-text: #000000;
+    --color-primary: #1e3799;
+    --color-secondary: #4a69bd;
+    --color-accent: #38ada9;
+    --color-highlight: #f0f3f5;
+    --color-success: #2ecc71;
+    --border-color: #dfe6e9;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --radius: 6px;
+    --transition: 0.3s ease-in-out;
+}
+
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #646774;
+    color: #000000;
+    padding: 40px;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+h2, h3 {
+    color: #000000;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.tabla-estudiantes {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: var(--color-white);
+    border: 1px solid var(-f6f0);
     color: #1e272e;
     cursor: default;
     transition: background-color 0.3s ease;
