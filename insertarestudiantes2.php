@@ -8,7 +8,6 @@ $password = "TuContraseñaSegura";
 $dbname = "myDB";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
@@ -19,13 +18,11 @@ $carrera = $_POST['carrera'];
 $notas_input = $_POST['notas'];
 
 $notas_array = array_map('floatval', explode(',', $notas_input));
-
 if (count($notas_array) == 0 || in_array(false, $notas_array, true)) {
-    die("Error: Asegúrate de ingresar notas válidas separadas por coma.");
+    die("❌ Error: Asegúrate de ingresar notas válidas separadas por coma.");
 }
 
 $notas_json = json_encode($notas_array);
-
 $promedio = array_sum($notas_array) / count($notas_array);
 
 $sql = "INSERT INTO EJERCICIO7 (nombre, carrera, edad, notas, promedios)

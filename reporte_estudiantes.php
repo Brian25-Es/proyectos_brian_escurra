@@ -8,10 +8,10 @@ $password = "TuContraseñaSegura";
 $dbname = "myDB";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
+
 $sql = "SELECT id, nombre, edad, carrera, notas, promedios FROM EJERCICIO7";
 $result = $conn->query($sql);
 
@@ -87,9 +87,7 @@ $mejorEstudiante = "";
 
 <p><a href="introducirestudiante.html">Introducir nuevo estudiante</a></p>
 
-<?php
-$conn->close();
-?>
+<?php $conn->close(); ?>
 
 </body>
 </html>
