@@ -1,32 +1,39 @@
+<?php
+session_start();
+if (!isset($_SESSION['logueado']) || $_SESSION['logueado'] !== true) {
+    header("Location: login.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Introducir Estudiante</title>
-    <link rel="stylesheet" href="estilostp7.css">
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        input, select, button { margin: 5px; padding: 8px; }
+    </style>
 </head>
 <body>
+    <h2>Formulario de Estudiantes</h2>
+    <form action="basededatostp7.php" method="post">
+        <label>Nombre:</label><br>
+        <input type="text" name="nombre" required><br>
 
-<h2>📝 Introducir Nuevo Estudiante</h2>
+        <label>Edad:</label><br>
+        <input type="number" name="edad" required><br>
 
-<form action="insertarestudiantes2.php" method="post">
-    <label for="nombre">Nombre:</label><br>
-    <input type="text" name="nombre" required><br><br>
+        <label>Carrera:</label><br>
+        <input type="text" name="carrera" required><br>
 
-    <label for="edad">Edad:</label><br>
-    <input type="number" name="edad" required><br><br>
+        <label>Notas (separadas por comas):</label><br>
+        <input type="text" name="notas" required><br>
 
-    <label for="carrera">Carrera:</label><br>
-    <input type="text" name="carrera" required><br><br>
-
-    <label for="notas">Notas (separadas por coma):</label><br>
-    <input type="text" name="notas" placeholder="Ej: 8.5, 7.0, 9.2" required><br><br>
-
-    <input type="submit" value="Guardar Estudiante">
-</form>
-
-<br>
-<button onclick="window.location.href='reporte_estudiantes.php'">Ver Reporte</button>
-
+        <button type="submit">Guardar</button>
+    </form>
+    <br>
+    <a href="reporte_estudiantes.php">⬅ Volver al reporte</a>
 </body>
 </html>
