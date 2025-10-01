@@ -1,181 +1,207 @@
 <?php
 session_start();
-if (!isset($_SESSION['logueado']) || $_SESSION['logueado'] !== true) {
-    header("Location: login.php");
-    exit();
-}
-
-$admin = $_SESSION['tipo'] === 'admin';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $servername = "localhost";
-$username = "adminphp";
-$password = "TuContraseñaSegura";
-$dbname = "myDB";
+$username   = "adminphp";
+$password   = "TuContraseñaSegura";
+$dbname     = "myDB";
+
 $conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) die("Conexión fallida: " . $conn->connect_error);
+if ($conn->connect_error) {
+    die("Conexión fallida: " . $conn->connect_error);
+}
 
-if ($admin && isset($_POST['accion'])) {
-    $accion = $_POST['accion'];
-    $nombre = $_POST['nombre'];
-    $edad = (int)$_POST['edad'];
-    $carrera = $_POST['carrera'];
-    $notas_in = $_POST['notas'];
-    $notas_array = array_map('floatval', explode(',', $notas_in));
-    $promedio = count($notas_array) ? array_sum($notas_array)/count($notas_array) : 0;
+if (!isset($_SESSION['usuario'])) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
+        $usuario = $_POST['usuario'];
+        $clave = $_POST['contraseña'];
 
-    if ($accion === 'insertar') {
-        $stmt = $conn->prepare("INSERT INTO estudiantes (nombre, edad, carrera, usuario, contraseña, tipo) VALUES (?, ?, ?, ?, ?, 'alumno')");
-        $stmt->bind_param("siss", $nombre, $edad, $carrera, $nombre, $nombre); // usuario y pass iguales al nombre por default
+        $stmt = $conn->prepare("SELECT id, tipo, contraseña FROM estudiantes WHERE usuario=?");
+        $stmt->bind_param("s", $usuario);
         $stmt->execute();
-        $estudiante_id = $stmt->insert_id;
-        $stmt->close();
-
-        $stmt = $conn->prepare("INSERT INTO EJERCICIO7 (id, nombre, edad, carrera, notas, promedios) VALUES (?, ?, ?, ?, ?, ?)");
-        $notas_json = json_encode($notas_array);
-        $stmt->bind_param("iisssd", $estudiante_id, $nombre, $edad, $carrera, $notas_json, $promedio);
-        $stmt->execute();
-        $stmt->close();
-
-    } elseif ($accion === 'editar') {
-        $id = (int)$_POST['id'];
-        $stmt = $conn->prepare("UPDATE estudiantes SET nombre=?, edad=?, carrera=? WHERE id=?");
-        $stmt->bind_param("sisi", $nombre, $edad, $carrera, $id);
-        $stmt->execute();
-        $stmt->close();
-
-        $notas_json = json_encode($notas_array);
-        $stmt = $conn->prepare("UPDATE EJERCICIO7 SET nombre=?, edad=?, carrera=?, notas=?, promedios=? WHERE id=?");
-        $stmt->bind_param("sissdi", $nombre, $edad, $carrera, $notas_json, $promedio, $id);
-        $stmt->execute();
+        $stmt->bind_result($id, $tipo, $hash);
+        if ($stmt->fetch() && password_verify($clave, $hash)) {
+            $_SESSION['usuario'] = $usuario;
+            $_SESSION['tipo'] = $tipo;
+        } else {
+            $errorLogin = "Usuario o contraseña incorrectos";
+        }
         $stmt->close();
     }
-    header("Location: reporte_estudiantes.php");
-    exit();
+
+    if (!isset($_SESSION['usuario'])) {
+        echo '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Login</title></head><body>';
+        echo '<h2>🔒 Iniciar Sesión</h2>';
+        if (isset($errorLogin)) echo "<p style='color:red;'>$errorLogin</p>";
+        echo '<form method="post">
+                <label>Usuario:</label><br><input type="text" name="usuario" required><br><br>
+                <label>Contraseña:</label><br><input type="password" name="contraseña" required><br><br>
+                <input type="submit" name="login" value="Ingresar">
+              </form></body></html>';
+        exit();
+    }
 }
 
-if ($admin && isset($_GET['eliminar'])) {
+$isAdmin = ($_SESSION['tipo'] === 'admin');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['accion'])) {
+        $accion = $_POST['accion'];
+
+        $nombre = $_POST['nombre'];
+        $edad = (int)$_POST['edad'];
+        $carrera = $_POST['carrera'];
+        $notas_in = $_POST['notas'];
+        $notas_array = array_map('floatval', explode(',', $notas_in));
+        $promedio = count($notas_array) ? array_sum($notas_array)/count($notas_array) : 0;
+
+        if ($accion === 'insertar' && $isAdmin) {
+            $usuario = $_POST['usuario'];
+            $contraseña = password_hash($_POST['contraseña'], PASSWORD_DEFAULT);
+
+            $stmtCheck = $conn->prepare("SELECT id FROM estudiantes WHERE usuario=?");
+            $stmtCheck->bind_param("s", $usuario);
+            $stmtCheck->execute();
+            $stmtCheck->store_result();
+            if ($stmtCheck->num_rows > 0) {
+                die("El usuario '$usuario' ya existe.");
+            }
+            $stmtCheck->close();
+
+            $stmt = $conn->prepare("SELECT id FROM carreras WHERE nombre=?");
+            $stmt->bind_param("s", $carrera);
+            $stmt->execute();
+            $stmt->bind_result($carrera_id);
+            $stmt->fetch();
+            $stmt->close();
+
+            if (!$carrera_id) {
+                $stmt = $conn->prepare("INSERT INTO carreras (nombre) VALUES (?)");
+                $stmt->bind_param("s", $carrera);
+                $stmt->execute();
+                $carrera_id = $stmt->insert_id;
+                $stmt->close();
+            }
+
+            $stmt = $conn->prepare("INSERT INTO estudiantes (nombre, edad, carrera_id, usuario, contraseña, tipo) VALUES (?,?,?,?,?,?)");
+            $tipoEstudiante = 'alumno';
+            $stmt->bind_param("siisss", $nombre, $edad, $carrera_id, $usuario, $contraseña, $tipoEstudiante);
+            $stmt->execute();
+            $estudiante_id = $stmt->insert_id;
+            $stmt->close();
+
+            $stmt = $conn->prepare("INSERT INTO notas (estudiante_id, valor) VALUES (?,?)");
+            foreach ($notas_array as $nota) {
+                $stmt->bind_param("id", $estudiante_id, $nota);
+                $stmt->execute();
+            }
+            $stmt->close();
+
+            $notas_json = json_encode($notas_array);
+            $stmt = $conn->prepare("INSERT INTO EJERCICIO7 (id,nombre,edad,carrera,notas,promedios) VALUES (?,?,?,?,?,?)");
+            $stmt->bind_param("iisssd", $estudiante_id, $nombre, $edad, $carrera, $notas_json, $promedio);
+            $stmt->execute();
+            $stmt->close();
+
+        } elseif ($accion === 'editar' && $isAdmin) {
+            $id = (int)$_POST['id'];
+
+            $stmt = $conn->prepare("UPDATE estudiantes SET nombre=?, edad=?, carrera_id=? WHERE id=?");
+            $stmt->bind_param("siii", $nombre, $edad, $carrera_id, $id);
+            $stmt->execute();
+            $stmt->close();
+
+            $conn->query("DELETE FROM notas WHERE estudiante_id=$id");
+            $stmt = $conn->prepare("INSERT INTO notas (estudiante_id, valor) VALUES (?,?)");
+            foreach ($notas_array as $nota) {
+                $stmt->bind_param("id", $id, $nota);
+                $stmt->execute();
+            }
+            $stmt->close();
+
+            $notas_json = json_encode($notas_array);
+            $stmt = $conn->prepare("UPDATE EJERCICIO7 SET nombre=?, edad=?, carrera=?, notas=?, promedios=? WHERE id=?");
+            $stmt->bind_param("sissdi", $nombre, $edad, $carrera, $notas_json, $promedio, $id);
+            $stmt->execute();
+            $stmt->close();
+        }
+    }
+}
+
+if ($isAdmin && isset($_GET['eliminar'])) {
     $id = (int)$_GET['eliminar'];
-    $conn->query("DELETE FROM estudiantes WHERE id=$id");
-    $conn->query("DELETE FROM EJERCICIO7 WHERE id=$id");
-    header("Location: reporte_estudiantes.php");
-    exit();
+    $stmt = $conn->prepare("DELETE FROM notas WHERE estudiante_id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $conn->prepare("DELETE FROM estudiantes WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
+
+    $stmt = $conn->prepare("DELETE FROM EJERCICIO7 WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+    $stmt->close();
 }
 
-$sql = "SELECT * FROM EJERCICIO7 ORDER BY id ASC";
+$sql = "SELECT e.id, e.nombre, e.edad, c.nombre AS carrera, ej.notas, ej.promedios, e.tipo
+        FROM estudiantes e
+        LEFT JOIN carreras c ON e.carrera_id=c.id
+        LEFT JOIN EJERCICIO7 ej ON ej.id=e.id
+        ORDER BY e.id ASC";
 $result = $conn->query($sql);
+
 $estudiantes = [];
 $mejorPromedio = 0;
 $mejorEstudiante = "";
-while ($row = $result->fetch_assoc()) {
-    $estudiantes[] = $row;
-    if ($row['promedios'] > $mejorPromedio) {
-        $mejorPromedio = $row['promedios'];
-        $mejorEstudiante = $row['nombre'];
+if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $estudiantes[] = $row;
+        if ($row['promedios'] > $mejorPromedio) {
+            $mejorPromedio = $row['promedios'];
+            $mejorEstudiante = $row['nombre'];
+        }
     }
-}
-
-$accion_form = 'insertar';
-$estudianteEditar = null;
-if ($admin && isset($_GET['editar'])) {
-    $idEditar = (int)$_GET['editar'];
-    $stmt = $conn->prepare("SELECT * FROM EJERCICIO7 WHERE id=?");
-    $stmt->bind_param("i", $idEditar);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    $estudianteEditar = $res->fetch_assoc();
-    $stmt->close();
-    $accion_form = 'editar';
 }
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Reporte de Estudiantes</title>
-<style>
-body { font-family: Arial; margin:20px; }
-.tabla-estudiantes { border-collapse: collapse; width: 100%; margin-top:20px; }
-.tabla-estudiantes th, .tabla-estudiantes td { border:1px solid #ccc; padding:8px; text-align:center; }
-.btn { padding: 4px 8px; margin:2px; text-decoration:none; border-radius:4px; color:white; }
-.btn-editar { background-color:#4CAF50; }
-.btn-eliminar { background-color:#f44336; }
-.mejor-estudiante { background:#ffeb3b; padding:5px; border-radius:5px; }
-input, select { padding:5px; margin:5px; }
-input[type="submit"], button { padding:5px 10px; margin-right:5px; }
-</style>
+    <meta charset="UTF-8">
+    <title>Reporte de Estudiantes</title>
+    <link rel="stylesheet" href="estilostp7.css">
 </head>
 <body>
 <h2>📋 Reporte de Estudiantes</h2>
-<p>Bienvenido(a): <?= $_SESSION['usuario'] ?> (<?= $_SESSION['tipo'] ?>) | <a href="logout.php">Cerrar sesión</a></p>
+<p>Usuario: <?= $_SESSION['usuario'] ?> (<?= $_SESSION['tipo'] ?>) | <a href="logout.php">Cerrar sesión</a></p>
 
-<?php if($admin): ?>
-<h3><?= $accion_form==='editar' ? "✏️ Editar Estudiante" : "📝 Introducir Nuevo Estudiante" ?></h3>
-<form method="post" action="reporte_estudiantes.php" id="formEstudiante">
-    <?php if($accion_form==='editar'): ?>
-        <input type="hidden" name="id" value="<?= $estudianteEditar['id'] ?>">
-    <?php endif; ?>
-    <input type="hidden" name="accion" value="<?= $accion_form ?>">
-
-    <label>Nombre:</label><br>
-    <input type="text" name="nombre" required value="<?= $accion_form==='editar' ? $estudianteEditar['nombre'] : '' ?>"><br>
-    <label>Edad:</label><br>
-    <input type="number" name="edad" required value="<?= $accion_form==='editar' ? $estudianteEditar['edad'] : '' ?>"><br>
-    <label>Carrera:</label><br>
-    <input type="text" name="carrera" required value="<?= $accion_form==='editar' ? $estudianteEditar['carrera'] : '' ?>"><br>
-    <label>Notas (separadas por coma):</label><br>
-    <input type="text" name="notas" required value="<?= $accion_form==='editar' ? implode(",", json_decode($estudianteEditar['notas'])) : '' ?>"><br><br>
-    <input type="submit" value="<?= $accion_form==='editar' ? '💾 Guardar Cambios' : 'Guardar Estudiante' ?>">
-    <?php if($accion_form==='editar'): ?>
-        <button type="button" onclick="cancelarEdicion()">Cancelar / Nuevo</button>
-    <?php endif; ?>
-</form>
-<script>
-function cancelarEdicion() {
-    const form = document.getElementById('formEstudiante');
-    form.reset();
-    form.querySelector('input[name="accion"]').value = 'insertar';
-    const idInput = form.querySelector('input[name="id"]');
-    if(idInput) idInput.remove();
-    document.querySelector('h3').textContent = "📝 Introducir Nuevo Estudiante";
-}
-</script>
+<?php if ($isAdmin): ?>
+<p><a href="introducirestudiante.php">➕ Agregar Estudiante</a></p>
 <?php endif; ?>
 
-<table class="tabla-estudiantes">
-    <thead>
-        <tr>
-            <th>ID</th><th>Nombre</th><th>Edad</th><th>Carrera</th><th>Notas</th><th>Promedio</th>
-            <?php if($admin) echo "<th>Acciones</th>"; ?>
-        </tr>
-    </thead>
-    <tbody>
-        <?php if($estudiantes): foreach($estudiantes as $est): ?>
-            <tr>
-                <td><?= $est['id'] ?></td>
-                <td><?= $est['nombre'] ?></td>
-                <td><?= $est['edad'] ?></td>
-                <td><?= $est['carrera'] ?></td>
-                <td><?= implode(", ", json_decode($est['notas'])) ?></td>
-                <td><?= number_format($est['promedios'],2) ?></td>
-                <?php if($admin): ?>
-                <td>
-                    <a class="btn btn-editar" href="?editar=<?= $est['id'] ?>">Editar</a>
-                    <a class="btn btn-eliminar" href="?eliminar=<?= $est['id'] ?>" onclick="return confirm('¿Seguro que quieres eliminar este estudiante?')">Eliminar</a>
-                </td>
-                <?php endif; ?>
-            </tr>
-        <?php endforeach; else: ?>
-            <tr><td colspan="<?= $admin ? 7 : 6 ?>">No hay estudiantes registrados.</td></tr>
-        <?php endif; ?>
-    </tbody>
-</table>
-
-<?php if($mejorEstudiante): ?>
-<h3>🏆 Mejor Estudiante</h3>
-<p class="mejor-estudiante"><strong>Nombre:</strong> <?= $mejorEstudiante ?><br>
-<strong>Promedio:</strong> <?= number_format($mejorPromedio,2) ?></p>
+<table class="tabla-estudiantes" border="1" cellpadding="5">
+<tr>
+<th>ID</th><th>Nombre</th><th>Edad</th><th>Carrera</th><th>Notas</th><th>Promedio</th>
+<?php if ($isAdmin): ?><th>Acciones</th><?php endif; ?>
+</tr>
+<?php foreach($estudiantes as $est): ?>
+<tr>
+<td><?= $est['id'] ?></td>
+<td><?= $est['nombre'] ?></td>
+<td><?= $est['edad'] ?></td>
+<td><?= $est['carrera'] ?></td>
+<td><?= implode(", ", json_decode($est['notas'])) ?></td>
+<td><?= number_format($est['promedios'],2) ?></td>
+<?php if ($isAdmin): ?>
+<td>
+    <a href="introducirestudiante.php?editar=<?= $est['id'] ?>">Editar</a> |
+    <a href="?eliminar=<?= $est['id'] ?>" onclick="return confirm('¿Seguro que quieres eliminar este estudiante?')">Eliminar</a>
+</td>
 <?php endif; ?>
-
-</body>
-</html>
-<?php $conn->close(); ?>
+</tr>
+<?php endforeach; ?>

@@ -28,23 +28,23 @@ if ($conn->connect_error) {
 <form action="reporte_estudiantes.php" method="post">
     <input type="hidden" name="accion" value="insertar">
 
-    <label for="nombre">Nombre:</label><br>
+    <label>Nombre:</label><br>
     <input type="text" name="nombre" required><br><br>
 
-    <label for="edad">Edad:</label><br>
+    <label>Edad:</label><br>
     <input type="number" name="edad" required><br><br>
 
-    <label for="carrera">Carrera:</label><br>
+    <label>Carrera:</label><br>
     <input type="text" name="carrera" required><br><br>
 
-    <label for="notas">Notas (separadas por coma):</label><br>
-    <input type="text" name="notas" placeholder="Ej: 8.5, 7.0, 9.2" required><br><br>
+    <label>Notas (separadas por coma):</label><br>
+    <input type="text" name="notas" placeholder="Ej: 8.5,7.0,9.2" required><br><br>
 
-    <label for="usuario">Usuario:</label><br>
-    <input type="text" name="usuario" placeholder="Usuario para login" required><br><br>
+    <label>Usuario:</label><br>
+    <input type="text" name="usuario" required><br><br>
 
-    <label for="contraseña">Contraseña:</label><br>
-    <input type="password" name="contraseña" placeholder="Contraseña" required><br><br>
+    <label>Contraseña:</label><br>
+    <input type="password" name="contraseña" required><br><br>
 
     <input type="submit" value="Guardar Estudiante">
 </form>
@@ -54,4 +54,7 @@ if ($conn->connect_error) {
 
 </body>
 </html>
-<?php $conn->close(); ?>
+
+<?php
+$conn->close();
+?>
