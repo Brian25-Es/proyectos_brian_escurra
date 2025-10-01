@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['logueado']) || $_SESSION['logueado'] !== true) {
+    header("Location: login.php");
+    exit();
+}
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -11,7 +17,6 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
-
 
 if (isset($_POST['accion']) && $_POST['accion'] === 'insertar') {
     $nombre = $_POST['nombre'];
@@ -52,7 +57,7 @@ if (isset($_POST['accion']) && $_POST['accion'] === 'insertar') {
 
     $notas_json = json_encode($notas_array);
     $stmt = $conn->prepare("INSERT INTO EJERCICIO7 (id, nombre, edad, carrera, notas, promedios) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("iisssd", $estudiante_id, $nombre, $edad, $carrera, $notas_json, $promedio);
+    $stmt->bind_param("isissd", $estudiante_id, $nombre, $edad, $carrera, $notas_json, $promedio);
     $stmt->execute();
     $stmt->close();
 
@@ -166,6 +171,7 @@ if ($result->num_rows > 0) {
 <body>
 
 <h2>📋 Reporte de Estudiantes</h2>
+<a href="logout.php">🚪 Cerrar sesión</a><br><br>
 
 <?php
 if (isset($_GET['editar'])) {
