@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>🎲 El Adivinador de Emojis</title>
+  <style>
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: radial-gradient(circle, #ffe259, #ffa751);
+      color: #333;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    #emojiOpciones {
+      font-size: 40px;
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .emoji-btn {
+      background: white;
+      border: 3px dashed #f39c12;
+      border-radius: 10px;
+      cursor: pointer;
+      padding: 10px;
+      transition: transform 0.2s;
+    }
+
+    .emoji-btn:hover {
+      transform: scale(1.3);
+    }
+
+    #pista {
+      font-style: italic;
+      margin-top: 20px;
+      font-size: 18px;
+      color: #555;
+    }
+
+    #historial {
+      margin-top: 30px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 16px;
+    }
+
+    .correcto {
+      color: green;
+      font-weight: bold;
+    }
+
+    .incorrecto {
+      color: red;
+    }
+
+    #reiniciar {
+      margin-top: 30px;
+      padding: 12px 25px;
+      font-size: 18px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #reiniciar:hover {
+      background-color: #c0392b;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎲 Adiviná el Emoji Secreto</h1>
+  <p>Hacé clic en el emoji que creés que es el elegido 🔮</p>
+
+  <div id="emojiOpciones"></div>
+
+  <div id="pista">🕵️ Esperando tu primer intento...</div>
+
+  <div id="historial"></div>
+
+  <button id="reiniciar">🔁 Reiniciar Juego</button>
+
+  <script>
+    const emojis = ["😎", "🥸", "😱", "🤖", "👽", "👻", "🦄", "🐸", "🐙", "💩", "🎃", "🤯", "😇", "🤑", "🤡"];
+    let emojiSecreto = "";
+    let intentos = 0;
+
+    const pistasLocas = [
+      "👀 Mmm... ese tiene mirada sospechosa.",
+      "🤔 ¿Seguro? No lo sé Rick...",
+      "💡 Te estás acercando... o no.",
+      "😵‍💫 Este juego no tiene sentido, pero seguí jugando.",
+      "😂 Me reí fuerte con ese intento.",
+      "📉 Tu probabilidad de ganar acaba de bajar.",
+      "🧠 Usá el poder de la intuición... o del azar.",
+      "🎯 Si le pegás, te ganás un aplauso invisible.",
+      "🔥 Estás caliente... como el sol.",
+      "🧊 Estás más frío que un pingüino en la Antártida."
+    ];
+
+    const emojiOpcionesDiv = document.getElementById("emojiOpciones");
+    const pistaDiv = document.getElementById("pista");
+    const historialDiv = document.getElementById("historial");
+    const reiniciarBtn = document.getElementById("reiniciar");
+
+    function iniciarJuego() {
+      intentos = 0;
+      historialDiv.innerHTML = "";
+      pistaDiv.textContent = "🕵️ Pensá bien tu jugada...";
+      emojiSecreto = emojis[Math.floor(Math.random() * emojis.length)];
+      emojiOpcionesDiv.innerHTML = "";
+
+      emojis.forEach((emoji) => {
+        const btn = document.createElement("button");
+        btn.className = "emoji-btn";
+        btn.textContent = emoji;
+        btn.onclick = () => evaluarIntento(emoji);
+        emojiOpcionesDiv.appendChild(btn);
+      });
+    }
+
+    function evaluarIntento(emojiElegido) {
+      intentos++;
+      const resultado = document.createElement("div");
+
+      if (emojiElegido === emojiSecreto) {
+        resultado.innerHTML = `✅ Intento ${intentos}: Adivinaste el emoji secreto ${emojiSecreto} 🎉`;
+        resultado.className = "correcto";
+        pistaDiv.textContent = "👏 ¡Sos un maestro adivinador de emojis!";
+        bloquearBotones();
+      } else {
+        const pistaRandom = pistasLocas[Math.floor(Math.random() * pistasLocas.length)];
+        resultado.innerHTML = `❌ Intento ${intentos}: Elegiste ${emojiElegido}. ${pistaRandom}`;
+        resultado.className = "incorrecto";
+        pistaDiv.textContent = pistaRandom;
+      }
+
+      historialDiv.prepend(resultado);
+    }
+
+    function bloquearBotones() {
+      const botones = document.querySelectorAll(".emoji-btn");
+      botones.forEach(btn => btn.disabled = true);
+    }
+
+    reiniciarBtn.onclick = iniciarJuego;
+
+    iniciarJuego(); // Comienza automáticamente al cargar
+  </script>
+
+</body>
+</html>

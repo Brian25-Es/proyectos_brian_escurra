@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>🔐 Generador Piola de Contraseñas</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1abc9c, #3498db);
+      color: #fff;
+      text-align: center;
+      padding: 50px;
+    }
+
+    .container {
+      background-color: rgba(0,0,0,0.2);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      max-width: 500px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+    }
+
+    .checkboxes {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 15px 0;
+    }
+
+    .checkboxes label {
+      font-weight: normal;
+      font-size: 16px;
+      margin: 5px 0;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    button {
+      background-color: #e67e22;
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #d35400;
+    }
+
+    #resultado {
+      margin-top: 25px;
+      font-size: 24px;
+      font-weight: bold;
+      background-color: #fff;
+      color: #333;
+      padding: 15px;
+      border-radius: 10px;
+      letter-spacing: 2px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    #emoji {
+      font-size: 48px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎉 Generador Piola de Contraseñas 🔐</h1>
+
+    <label for="longitud">📏 Longitud:</label>
+    <input type="number" id="longitud" value="10" min="4" max="30">
+
+    <div class="checkboxes">
+      <label><input type="checkbox" id="mayusculas" checked> Incluir Mayúsculas (A-Z)</label>
+      <label><input type="checkbox" id="minusculas" checked> Incluir Minúsculas (a-z)</label>
+      <label><input type="checkbox" id="numeros" checked> Incluir Números (0-9)</label>
+      <label><input type="checkbox" id="simbolos"> Incluir Símbolos (!@#$%)</label>
+    </div>
+
+    <button id="generar">🚀 Generar Contraseña</button>
+
+    <div id="resultado">🕶️ Tu contraseña aparecerá aquí...</div>
+    <div id="emoji">🤖</div>
+  </div>
+
+  <script>
+    // Dejalo vacío por ahora, lo llenamos desde consola 👇
+  </script>
+</body>
+</html>

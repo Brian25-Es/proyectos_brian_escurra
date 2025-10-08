@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>⚽ Memes de Equipos Argentinos</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #2c3e50, #3498db);
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    select {
+      font-size: 18px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      background-color: white;
+      color: #333;
+    }
+
+    #equipoSeleccionado {
+      margin-top: 40px;
+    }
+
+    #meme {
+      margin-top: 20px;
+      max-width: 400px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    #mensaje {
+      margin-top: 20px;
+      font-size: 20px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⚽ Elegí tu equipo... o el de tu enemigo 😈</h1>
+
+  <select id="selectorEquipos">
+    <option value="">-- Seleccioná un equipo --</option>
+    <option value="boca">Boca Juniors</option>
+    <option value="river">River Plate</option>
+    <option value="independiente">Independiente</option>
+    <option value="racing">Racing Club</option>
+    <option value="sanlorenzo">San Lorenzo</option>
+    <option value="rosario">Rosario Central</option>
+    <option value="newells">Newell's Old Boys</option>
+  </select>
+
+  <div id="equipoSeleccionado">
+    <img id="meme" src="" alt="" style="display:none;">
+    <div id="mensaje"></div>
+  </div>
+
+  <script>
+    const memes = {
+      boca: {
+        imagen: "https://i.imgur.com/GnOugAZ.jpg",
+        mensaje: "¡A lo Boca, papá! 💙💛💙"
+      },
+      river: {
+        imagen: "https://i.imgur.com/bqkZ4hU.jpeg",
+        mensaje: "El más grande, lejos... o eso dicen. 🔴⚪"
+      },
+      independiente: {
+        imagen: "https://i.imgur.com/FG0vYrI.jpeg",
+        mensaje: "¡Rey de Copas, pero sin copa nueva hace rato! 😅"
+      },
+      racing: {
+        imagen: "https://i.imgur.com/ltUp6TG.jpeg",
+        mensaje: "Racing: fundado en 1903, campeón en... bueno, a veces. 😜"
+      },
+      sanlorenzo: {
+        imagen: "https://i.imgur.com/KwldU1c.jpeg",
+        mensaje: "¡Vamos Ciclón! Aunque a veces se nos va la nafta. 💨"
+      },
+      rosario: {
+        imagen: "https://i.imgur.com/M5wGSuT.jpeg",
+        mensaje: "Canallas desde la cuna. ¡Y del bocho también! 🧠"
+      },
+      newells: {
+        imagen: "https://i.imgur.com/3Ak4FEv.jpeg",
+        mensaje: "La Lepra te hace reír... o llorar, depende el día. 😭"
+      }
+    };
+
+    const selector = document.getElementById("selectorEquipos");
+    const imagen = document.getElementById("meme");
+    const mensaje = document.getElementById("mensaje");
+
+    selector.addEventListener("change", function() {
+      const equipo = selector.value;
+      if (memes[equipo]) {
+        imagen.src = memes[equipo].imagen;
+        imagen.style.display = "block";
+        mensaje.textContent = memes[equipo].mensaje;
+      } else {
+        imagen.style.display = "none";
+        mensaje.textContent = "";
+      }
+    });
+  </script>
+
+</body>
+</html>
