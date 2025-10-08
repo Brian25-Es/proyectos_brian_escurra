@@ -132,12 +132,16 @@
             </select>
           </div>
 
-          <div class="col-12 d-flex justify-content-end mt-3">
-            <button id="aplicarFiltros" class="btn btn-primary me-2">
+          <!-- Botones -->
+          <div class="col-12 d-flex justify-content-end mt-3 flex-wrap gap-2">
+            <button id="aplicarFiltros" class="btn btn-primary">
               <i class="bi bi-funnel"></i> Aplicar Filtros
             </button>
             <button id="limpiarFiltros" class="btn btn-danger">
               <i class="bi bi-arrow-counterclockwise"></i> Limpiar Filtros
+            </button>
+            <button id="exportarTabla" class="btn btn-success">
+              <i class="bi bi-download"></i> Exportar Tabla
             </button>
           </div>
         </div>
@@ -273,8 +277,17 @@
       mostrarProductos(productosFiltrados);
     }
 
+    // ✅ NUEVA FUNCIÓN EXPORTAR
+    function exportarTabla() {
+      console.clear();
+      console.log("📤 Exportando productos filtrados...");
+      console.table(productosFiltrados);
+      alert("Los productos filtrados se mostraron en la consola (F12).");
+    }
+
     document.getElementById("aplicarFiltros").addEventListener("click", aplicarFiltros);
     document.getElementById("limpiarFiltros").addEventListener("click", limpiarFiltros);
+    document.getElementById("exportarTabla").addEventListener("click", exportarTabla);
     document.getElementById("buscar").addEventListener("input", aplicarFiltros);
 
     mostrarProductos(productosFiltrados);
