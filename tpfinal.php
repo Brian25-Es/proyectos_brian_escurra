@@ -187,109 +187,91 @@ $productos_json = json_encode($productos);
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <script>
-    // Convertimos el JSON que PHP generó en una variable JS
-    const productosOriginales = <?php echo $productos_json; ?>;
-    let productosFiltrados = [...productosOriginales];
+<script>
+function mostrarProductos(productos) {
+  const cuerpo = document.getElementById("cuerpoTabla");
+  cuerpo.innerHTML = "";
 
-    function mostrarProductos(productos) {
-      const cuerpo = document.getElementById("cuerpoTabla");
-      cuerpo.innerHTML = "";
+  if (productos.length === 0) {
+    cuerpo.innerHTML = `<tr><td colspan="6" class="sin-resultados">No hay productos para mostrar.</td></tr>`;
+  } else {
+    productos.forEach(p => {
+      const fila = document.createElement("tr");
+      if (p.stock < 10) fila.style.backgroundColor = "#fff0f0";
 
-      if (productos.length === 0) {
-        cuerpo.innerHTML = `<tr><td colspan="6" class="sin-resultados">No hay productos para mostrar.</td></tr>`;
-        actualizarEstadisticas(productos);
-        return;
-      }
+      const valorTotal = (p.precio * p.stock).toFixed(2);
+      fila.innerHTML = `
+        <td>${p.id}</td>
+        <td>${p.nombre}</td>
+        <td>${p.categoria}</td>
+        <td>$${p.precio}</td>
+        <td>${p.stock}</td>
+        <td>$${valorTotal}</td>
+      `;
+      cuerpo.appendChild(fila);
+    });
+  }
 
-      productos.forEach(p => {
-        const fila = document.createElement("tr");
-        if (p.stock < 10) fila.style.backgroundColor = "#fff0f0";
+  // Actualizar estadísticas
+  document.getElementById("totalProductos").textContent = productos.length;
+  const totalValor = productos.reduce((acc, p) => acc + (p.precio * p.stock), 0);
+  document.getElementById("productosFiltrados").textContent = productos.length;
+  document.getElementById("valorTotal").textContent = totalValor.toFixed(2);
+}
 
-        const valorTotal = p.precio * p.stock;
-        fila.innerHTML = `
-          <td>${p.id}</td>
-          <td>${p.nombre}</td>
-          <td>${p.categoria}</td>
-          <td>$${p.precio}</td>
-          <td>${p.stock}</td>
-          <td>$${valorTotal}</td>
-        `;
-        cuerpo.appendChild(fila);
-      });
+function obtenerFiltros() {
+  return {
+    buscar: document.getElementById("buscar").value,
+    categoria: document.getElementById("categoria").value,
+    stockMin: document.getElementById("stockMinimo").value,
+    precioMin: document.getElementById("precioMinimo").value,
+    precioMax: document.getElementById("precioMaximo").value,
+    ordenar: document.getElementById("ordenar").value
+  };
+}
 
-      actualizarEstadisticas(productos);
-    }
+function aplicarFiltrosAJAX() {
+  const filtros = obtenerFiltros();
+  const params = new URLSearchParams(filtros).toString();
 
-    function actualizarEstadisticas(productos) {
-      document.getElementById("totalProductos").textContent = productosOriginales.length;
-      document.getElementById("productosFiltrados").textContent = productos.length;
-      const total = productos.reduce((acc, p) => acc + (p.precio * p.stock), 0);
-      document.getElementById("valorTotal").textContent = total;
-    }
+  fetch(`filtrar_productos.php?${params}`)
+    .then(res => res.json())
+    .then(data => {
+      mostrarProductos(data);
+    })
+    .catch(err => {
+      console.error("Error al obtener productos:", err);
+    });
+}
 
-    function aplicarFiltros() {
-      const texto = document.getElementById("buscar").value.toLowerCase();
-      const categoria = document.getElementById("categoria").value;
-      const stockMin = parseInt(document.getElementById("stockMinimo").value);
-      const precioMin = parseFloat(document.getElementById("precioMinimo").value);
-      const precioMax = parseFloat(document.getElementById("precioMaximo").value);
+function limpiarFiltros() {
+  document.getElementById("buscar").value = "";
+  document.getElementById("categoria").value = "todas";
+  document.getElementById("stockMinimo").value = 0;
+  document.getElementById("precioMinimo").value = "";
+  document.getElementById("precioMaximo").value = "";
+  document.getElementById("ordenar").value = "nombre_asc";
+  aplicarFiltrosAJAX();
+}
 
-      productosFiltrados = productosOriginales.filter(p => {
-        const coincideNombre = p.nombre.toLowerCase().includes(texto);
-        const coincideCategoria = (categoria === "todas") || (p.categoria === categoria);
-        const cumpleStock = p.stock >= stockMin;
-        const dentroRangoMin = isNaN(precioMin) || p.precio >= precioMin;
-        const dentroRangoMax = isNaN(precioMax) || p.precio <= precioMax;
-        return coincideNombre && coincideCategoria && cumpleStock && dentroRangoMin && dentroRangoMax;
-      });
+function exportarTabla() {
+  console.clear();
+  console.log("📤 Exportando tabla filtrada (consulta en consola):");
+  alert("Los datos filtrados se muestran en consola. Abre F12 para verlos.");
+}
 
-      ordenarProductos();
-    }
+// Eventos automáticos
+document.querySelectorAll("#buscar, #categoria, #stockMinimo, #precioMinimo, #precioMaximo, #ordenar")
+  .forEach(el => el.addEventListener("input", aplicarFiltrosAJAX));
 
-    function ordenarProductos() {
-      const criterio = document.getElementById("ordenar").value;
-      productosFiltrados.sort((a, b) => {
-        switch (criterio) {
-          case "nombre_asc": return a.nombre.localeCompare(b.nombre);
-          case "nombre_desc": return b.nombre.localeCompare(a.nombre);
-          case "precio_asc": return a.precio - b.precio;
-          case "precio_desc": return b.precio - a.precio;
-          case "stock_asc": return a.stock - b.stock;
-          case "stock_desc": return b.stock - a.stock;
-          default: return 0;
-        }
-      });
-      mostrarProductos(productosFiltrados);
-    }
+document.getElementById("aplicarFiltros").addEventListener("click", aplicarFiltrosAJAX);
+document.getElementById("limpiarFiltros").addEventListener("click", limpiarFiltros);
+document.getElementById("exportarTabla").addEventListener("click", exportarTabla);
 
-    function limpiarFiltros() {
-      document.getElementById("buscar").value = "";
-      document.getElementById("categoria").value = "todas";
-      document.getElementById("stockMinimo").value = 0;
-      document.getElementById("precioMinimo").value = "";
-      document.getElementById("precioMaximo").value = "";
-      document.getElementById("ordenar").value = "nombre_asc";
+// Cargar productos al inicio
+aplicarFiltrosAJAX();
+</script>
 
-      productosFiltrados = [...productosOriginales];
-      mostrarProductos(productosFiltrados);
-    }
-
-    function exportarTabla() {
-      console.clear();
-      console.log("📤 Exportando productos filtrados...");
-      console.table(productosFiltrados);
-      alert("Los productos filtrados se mostraron en la consola (F12).");
-    }
-
-    document.getElementById("aplicarFiltros").addEventListener("click", aplicarFiltros);
-    document.getElementById("limpiarFiltros").addEventListener("click", limpiarFiltros);
-    document.getElementById("exportarTabla").addEventListener("click", exportarTabla);
-    document.getElementById("buscar").addEventListener("input", aplicarFiltros);
-
-    // Mostrar productos al cargar la página
-    mostrarProductos(productosFiltrados);
-  </script>
 
 </body>
 </html>
