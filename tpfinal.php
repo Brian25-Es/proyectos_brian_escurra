@@ -1,3 +1,40 @@
+<?php
+// Para mostrar errores (útil en desarrollo). Puedes comentar en producción.
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// --- 1. Conexión con base de datos MySQL ---
+$host = "localhost";
+$usuario = "adminphp";       // ajusta si tu usuario es distinto
+$contrasena = "TuContraseñaSegura";        // ajusta si tu MySQL tiene contraseña
+$bd = "gestion_productos";
+
+// Crear conexión
+$conn = new mysqli($host, $usuario, $contrasena, $bd);
+if ($conn->connect_error) {
+    die("Error de conexión: " . $conn->connect_error);
+}
+
+// --- 2. Obtener productos de la base de datos ---
+$sql = "SELECT * FROM productos";
+$resultado = $conn->query($sql);
+
+$productos = [];
+if ($resultado) {
+    while ($fila = $resultado->fetch_assoc()) {
+        // Convertir tipos adecuados si es necesario
+        $fila['precio'] = floatval($fila['precio']);
+        $fila['stock'] = intval($fila['stock']);
+        $productos[] = $fila;
+    }
+}
+$conn->close();
+
+// Convertir array PHP a JSON para que lo use JavaScript
+$productos_json = json_encode($productos);
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,7 +42,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sistema de Gestión de Productos</title>
 
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -76,7 +115,6 @@
     <div class="card mb-4">
       <div class="card-body">
         <h5 class="card-title mb-4">🔍 Filtros y Búsqueda</h5>
-
         <div class="row g-3">
           <div class="col-md-4">
             <label class="form-label fw-semibold">Buscar:</label>
@@ -143,25 +181,16 @@
         </div>
       </div>
     </div>
+
   </div>
 
-  <script>
-    let productosOriginales = [];
-    let productosFiltrados = [];
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    function cargarProductosDesdeServidor() {
-      fetch("obtener_productos.php")
-        .then(response => response.json())
-        .then(data => {
-          productosOriginales = data;
-          productosFiltrados = [...productosOriginales];
-          mostrarProductos(productosFiltrados);
-        })
-        .catch(error => {
-          console.error("Error al cargar productos:", error);
-          alert("No se pudieron cargar los productos.");
-        });
-    }
+  <script>
+    // Convertimos el JSON que PHP generó en una variable JS
+    const productosOriginales = <?php echo $productos_json; ?>;
+    let productosFiltrados = [...productosOriginales];
 
     function mostrarProductos(productos) {
       const cuerpo = document.getElementById("cuerpoTabla");
@@ -176,6 +205,7 @@
       productos.forEach(p => {
         const fila = document.createElement("tr");
         if (p.stock < 10) fila.style.backgroundColor = "#fff0f0";
+
         const valorTotal = p.precio * p.stock;
         fila.innerHTML = `
           <td>${p.id}</td>
@@ -207,7 +237,7 @@
 
       productosFiltrados = productosOriginales.filter(p => {
         const coincideNombre = p.nombre.toLowerCase().includes(texto);
-        const coincideCategoria = categoria === "todas" || p.categoria === categoria;
+        const coincideCategoria = (categoria === "todas") || (p.categoria === categoria);
         const cumpleStock = p.stock >= stockMin;
         const dentroRangoMin = isNaN(precioMin) || p.precio >= precioMin;
         const dentroRangoMax = isNaN(precioMax) || p.precio <= precioMax;
@@ -240,6 +270,7 @@
       document.getElementById("precioMinimo").value = "";
       document.getElementById("precioMaximo").value = "";
       document.getElementById("ordenar").value = "nombre_asc";
+
       productosFiltrados = [...productosOriginales];
       mostrarProductos(productosFiltrados);
     }
@@ -256,7 +287,8 @@
     document.getElementById("exportarTabla").addEventListener("click", exportarTabla);
     document.getElementById("buscar").addEventListener("input", aplicarFiltros);
 
-    cargarProductosDesdeServidor();
+    // Mostrar productos al cargar la página
+    mostrarProductos(productosFiltrados);
   </script>
 
 </body>
