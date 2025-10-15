@@ -243,7 +243,7 @@ function aplicarFiltrosAJAX() {
       console.error("Error al obtener productos:", err);
     });
 }
-
+-
 function limpiarFiltros() {
   document.getElementById("buscar").value = "";
   document.getElementById("categoria").value = "todas";
