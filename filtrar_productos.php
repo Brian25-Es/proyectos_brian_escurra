@@ -1,74 +1,53 @@
 <?php
 header('Content-Type: application/json');
 
-// Conexión
-$host = "localhost";
-$usuario = "adminphp";
-$contrasena = "TuContraseñaSegura";
-$bd = "gestion_productos";
-
-$conn = new mysqli($host, $usuario, $contrasena, $bd);
+// Conexión a la base de datos
+$conn = new mysqli("localhost", "adminphp", "TuContraseñaSegura", "gestion_productos");
 if ($conn->connect_error) {
-    http_response_code(500);
-    echo json_encode(["error" => "Error de conexión"]);
-    exit;
+  die(json_encode(["error" => "Error de conexión"]));
 }
 
-// Captura de filtros vía POST o GET
+// Capturar los filtros enviados
 $buscar = $_GET['buscar'] ?? '';
 $categoria = $_GET['categoria'] ?? 'todas';
-$stockMin = intval($_GET['stockMin'] ?? 0);
-$precioMin = $_GET['precioMin'] ?? '';
-$precioMax = $_GET['precioMax'] ?? '';
+$stockMinimo = intval($_GET['stockMinimo'] ?? 0);
 $ordenar = $_GET['ordenar'] ?? 'nombre_asc';
 
-// Armado del WHERE dinámico
-$where = "WHERE 1=1";
+// Crear la consulta base
+$sql = "SELECT * FROM productos WHERE stock >= $stockMinimo";
 
+// Filtros opcionales
 if ($buscar !== '') {
-    $buscar = $conn->real_escape_string($buscar);
-    $where .= " AND nombre LIKE '%$buscar%'";
+  $buscar = $conn->real_escape_string($buscar);
+  $sql .= " AND nombre LIKE '%$buscar%'";
 }
 
 if ($categoria !== 'todas') {
-    $categoria = $conn->real_escape_string($categoria);
-    $where .= " AND categoria = '$categoria'";
+  $categoria = $conn->real_escape_string($categoria);
+  $sql .= " AND categoria = '$categoria'";
 }
 
-$where .= " AND stock >= $stockMin";
-
-if ($precioMin !== '') {
-    $precioMin = floatval($precioMin);
-    $where .= " AND precio >= $precioMin";
-}
-if ($precioMax !== '') {
-    $precioMax = floatval($precioMax);
-    $where .= " AND precio <= $precioMax";
-}
-
-// Ordenamiento
-$orderBy = "";
+// Ordenar resultados
 switch ($ordenar) {
-    case "nombre_asc": $orderBy = "ORDER BY nombre ASC"; break;
-    case "nombre_desc": $orderBy = "ORDER BY nombre DESC"; break;
-    case "precio_asc": $orderBy = "ORDER BY precio ASC"; break;
-    case "precio_desc": $orderBy = "ORDER BY precio DESC"; break;
-    case "stock_asc": $orderBy = "ORDER BY stock ASC"; break;
-    case "stock_desc": $orderBy = "ORDER BY stock DESC"; break;
-    default: $orderBy = "ORDER BY nombre ASC";
+  case "nombre_desc": $sql .= " ORDER BY nombre DESC"; break;
+  case "precio_asc": $sql .= " ORDER BY precio ASC"; break;
+  case "precio_desc": $sql .= " ORDER BY precio DESC"; break;
+  default: $sql .= " ORDER BY nombre ASC";
 }
 
-$sql = "SELECT * FROM productos $where $orderBy";
+// Ejecutar consulta
 $result = $conn->query($sql);
-
 $productos = [];
+
 if ($result) {
-    while ($row = $result->fetch_assoc()) {
-        $row['precio'] = floatval($row['precio']);
-        $row['stock'] = intval($row['stock']);
-        $productos[] = $row;
-    }
+  while ($fila = $result->fetch_assoc()) {
+    $fila['precio'] = floatval($fila['precio']);
+    $fila['stock'] = intval($fila['stock']);
+    $productos[] = $fila;
+  }
 }
 
+// Cerrar conexión y devolver JSON
 $conn->close();
 echo json_encode($productos);
+?>
