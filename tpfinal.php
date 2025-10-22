@@ -23,7 +23,6 @@ $resultado = $conn->query($sql);
 $productos = [];
 if ($resultado) {
     while ($fila = $resultado->fetch_assoc()) {
-        // Convertir tipos adecuados si es necesario
         $fila['precio'] = floatval($fila['precio']);
         $fila['stock'] = intval($fila['stock']);
         $productos[] = $fila;
@@ -31,7 +30,6 @@ if ($resultado) {
 }
 $conn->close();
 
-// Convertir array PHP a JSON para que lo use JavaScript
 $productos_json = json_encode($productos);
 ?>
 
@@ -85,6 +83,7 @@ $productos_json = json_encode($productos);
   <div class="container">
     <h2>📦 Sistema de Gestión de Productos</h2>
 
+    <!-- Tarjetas estadísticas -->
     <div class="row g-4 mb-4 text-center">
       <div class="col-md-4">
         <div class="card py-3">
@@ -112,6 +111,7 @@ $productos_json = json_encode($productos);
       </div>
     </div>
 
+    <!-- Filtros -->
     <div class="card mb-4">
       <div class="card-body">
         <h5 class="card-title mb-4">🔍 Filtros y Búsqueda</h5>
@@ -153,15 +153,18 @@ $productos_json = json_encode($productos);
               <option value="stock_desc">Stock (Mayor a Menor)</option>
             </select>
           </div>
+
           <div class="col-12 d-flex justify-content-end mt-3 flex-wrap gap-2">
             <button id="aplicarFiltros" class="btn btn-primary">Aplicar Filtros</button>
             <button id="limpiarFiltros" class="btn btn-danger">Limpiar Filtros</button>
             <button id="exportarTabla" class="btn btn-success">Exportar Tabla</button>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalProducto">➕ Agregar Producto</button>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Tabla -->
     <div class="card">
       <div class="card-body">
         <div class="table-responsive">
@@ -174,6 +177,7 @@ $productos_json = json_encode($productos);
                 <th>Precio</th>
                 <th>Stock</th>
                 <th>Valor Total</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody id="cuerpoTabla"></tbody>
@@ -182,6 +186,48 @@ $productos_json = json_encode($productos);
       </div>
     </div>
 
+  </div>
+
+  <!-- Modal para agregar/editar -->
+  <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="tituloModal">Agregar Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formProducto">
+            <input type="hidden" id="productoId">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input type="text" id="nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Categoría</label>
+              <select id="categoriaForm" class="form-select">
+                <option>Electrónica</option>
+                <option>Ropa</option>
+                <option>Alimentos</option>
+                <option>Hogar</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Precio</label>
+              <input type="number" id="precio" class="form-control" step="0.01" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Stock</label>
+              <input type="number" id="stock" class="form-control" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="guardarProducto">Guardar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Bootstrap JS -->
@@ -193,12 +239,11 @@ function mostrarProductos(productos) {
   cuerpo.innerHTML = "";
 
   if (productos.length === 0) {
-    cuerpo.innerHTML = `<tr><td colspan="6" class="sin-resultados">No hay productos para mostrar.</td></tr>`;
+    cuerpo.innerHTML = `<tr><td colspan="7" class="sin-resultados">No hay productos para mostrar.</td></tr>`;
   } else {
     productos.forEach(p => {
       const fila = document.createElement("tr");
       if (p.stock < 10) fila.style.backgroundColor = "#fff0f0";
-
       const valorTotal = (p.precio * p.stock).toFixed(2);
       fila.innerHTML = `
         <td>${p.id}</td>
@@ -207,12 +252,16 @@ function mostrarProductos(productos) {
         <td>$${p.precio}</td>
         <td>${p.stock}</td>
         <td>$${valorTotal}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-1" onclick="editarProducto(${p.id}, '${p.nombre}', '${p.categoria}', ${p.precio}, ${p.stock})">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${p.id})">🗑️</button>
+        </td>
       `;
       cuerpo.appendChild(fila);
     });
   }
 
-  // Actualizar estadísticas
+  // Estadísticas
   document.getElementById("totalProductos").textContent = productos.length;
   const totalValor = productos.reduce((acc, p) => acc + (p.precio * p.stock), 0);
   document.getElementById("productosFiltrados").textContent = productos.length;
@@ -239,11 +288,9 @@ function aplicarFiltrosAJAX() {
     .then(data => {
       mostrarProductos(data);
     })
-    .catch(err => {
-      console.error("Error al obtener productos:", err);
-    });
+    .catch(err => console.error("Error:", err));
 }
--
+
 function limpiarFiltros() {
   document.getElementById("buscar").value = "";
   document.getElementById("categoria").value = "todas";
@@ -260,6 +307,55 @@ function exportarTabla() {
   alert("Los datos filtrados se muestran en consola. Abre F12 para verlos.");
 }
 
+// === CRUD ===
+function editarProducto(id, nombre, categoria, precio, stock) {
+  document.getElementById('productoId').value = id;
+  document.getElementById('nombre').value = nombre;
+  document.getElementById('categoriaForm').value = categoria;
+  document.getElementById('precio').value = precio;
+  document.getElementById('stock').value = stock;
+  document.getElementById('tituloModal').textContent = 'Editar Producto';
+  const modal = new bootstrap.Modal(document.getElementById('modalProducto'));
+  modal.show();
+}
+
+function eliminarProducto(id) {
+  if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
+  fetch('acciones_productos.php', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: `accion=eliminar&id=${id}`
+  })
+  .then(res => res.text())
+  .then(resp => {
+    console.log(resp);
+    aplicarFiltrosAJAX();
+  });
+}
+
+document.getElementById('guardarProducto').addEventListener('click', () => {
+  const id = document.getElementById('productoId').value;
+  const nombre = document.getElementById('nombre').value;
+  const categoria = document.getElementById('categoriaForm').value;
+  const precio = document.getElementById('precio').value;
+  const stock = document.getElementById('stock').value;
+  const accion = id ? 'editar' : 'insertar';
+
+  fetch('acciones_productos.php', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: `accion=${accion}&id=${id}&nombre=${nombre}&categoria=${categoria}&precio=${precio}&stock=${stock}`
+  })
+  .then(res => res.text())
+  .then(resp => {
+    console.log(resp);
+    aplicarFiltrosAJAX();
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalProducto'));
+    modal.hide();
+    document.getElementById('formProducto').reset();
+  });
+});
+
 // Eventos automáticos
 document.querySelectorAll("#buscar, #categoria, #stockMinimo, #precioMinimo, #precioMaximo, #ordenar")
   .forEach(el => el.addEventListener("input", aplicarFiltrosAJAX));
@@ -271,7 +367,6 @@ document.getElementById("exportarTabla").addEventListener("click", exportarTabla
 // Cargar productos al inicio
 aplicarFiltrosAJAX();
 </script>
-
 
 </body>
 </html>
