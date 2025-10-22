@@ -1,20 +1,22 @@
 <?php
-// Conexión
-$conn = new mysqli("localhost", "adminphp", "TuContraseñaSegura", "gestion_productos");
-if ($conn->connect_error) die("Error de conexión: ".$conn->connect_error);
-$conn->close();
+// Solo para inicializar la conexión si es necesario
+$host = "localhost";
+$usuario = "adminphp";
+$contrasena = "TuContraseñaSegura";
+$bd = "gestion_productos";
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión de Productos</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-  body { font-family: 'Inter', sans-serif; background-color: #f8fafc; padding: 30px; }
-  h2 { text-align: center; margin-bottom: 20px; }
-  .bajo-stock { background-color: #ffecec !important; }
+body { font-family: 'Inter', sans-serif; background-color: #f8fafc; padding: 30px; }
+h2 { text-align: center; margin-bottom: 20px; }
+.bajo-stock { background-color: #ffecec !important; }
 </style>
 </head>
 <body>
@@ -38,12 +40,14 @@ $conn->close();
     </select>
   </div>
   <div class="col-md-2"><input type="number" id="stockMinimo" class="form-control" placeholder="Stock mínimo" min="0"></div>
-  <div class="col-md-2"><select id="ordenar" class="form-select">
-    <option value="nombre_asc">Nombre (A-Z)</option>
-    <option value="nombre_desc">Nombre (Z-A)</option>
-    <option value="precio_asc">Precio ↑</option>
-    <option value="precio_desc">Precio ↓</option>
-  </select></div>
+  <div class="col-md-2">
+    <select id="ordenar" class="form-select">
+      <option value="nombre_asc">Nombre (A-Z)</option>
+      <option value="nombre_desc">Nombre (Z-A)</option>
+      <option value="precio_asc">Precio ↑</option>
+      <option value="precio_desc">Precio ↓</option>
+    </select>
+  </div>
   <div class="col-md-2 d-flex gap-2">
     <button class="btn btn-primary w-100" onclick="cargarProductos()">Filtrar</button>
     <button class="btn btn-danger w-100" onclick="limpiarFiltros()">Limpiar</button>
@@ -65,7 +69,10 @@ $conn->close();
 <div class="modal fade" id="modalProducto" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title" id="modalTitulo"></h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTitulo"></h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
       <div class="modal-body">
         <input type="hidden" id="productoId">
         <div class="mb-2"><input type="text" id="nombre" class="form-control" placeholder="Nombre"></div>
@@ -85,7 +92,7 @@ $conn->close();
 <script>
 let modal = new bootstrap.Modal(document.getElementById('modalProducto'));
 
-// --- Funciones CRUD y Filtros ---
+// --- Cargar Productos con filtros ---
 function cargarProductos() {
   const filtros = {
     buscar: document.getElementById("buscar").value,
@@ -130,7 +137,7 @@ function limpiarFiltros() {
   cargarProductos();
 }
 
-// --- CRUD ---
+// --- CRUD unificado ---
 function abrirAgregar() {
   document.getElementById("modalTitulo").innerText="Agregar Producto";
   document.getElementById("productoId").value="";
@@ -146,6 +153,7 @@ function abrirEditar(id) {
   fetch(`obtener_producto.php?id=${id}`)
     .then(res=>res.json())
     .then(p=>{
+      if(!p.id){alert("Producto no encontrado"); return;}
       document.getElementById("modalTitulo").innerText="Editar Producto";
       document.getElementById("productoId").value=p.id;
       document.getElementById("nombre").value=p.nombre;
@@ -161,16 +169,16 @@ function guardarProducto() {
   const id = document.getElementById("productoId").value;
   const data = {
     accion: id ? "editar" : "insertar",
-    id: id || null,
+    ...(id && {id: parseInt(id)}),
     nombre: document.getElementById("nombre").value,
     categoria: document.getElementById("categoriaInput").value,
-    precio: document.getElementById("precio").value,
-    stock: document.getElementById("stock").value
+    precio: parseFloat(document.getElementById("precio").value) || 0,
+    stock: parseInt(document.getElementById("stock").value) || 0
   };
 
-  fetch("crud_productos.php", {
+  fetch("acciones_productos.php", {
     method: "POST",
-    headers: {"Content-Type": "application/json"},
+    headers: {"Content-Type":"application/json"},
     body: JSON.stringify(data)
   })
   .then(res=>res.json())
@@ -178,22 +186,24 @@ function guardarProducto() {
     alert(res.mensaje);
     modal.hide();
     cargarProductos();
-  });
+  })
+  .catch(err=>console.error(err));
 }
 
-function eliminar(id) {
+function eliminar(id){
   if(!confirm("¿Eliminar producto?")) return;
 
-  fetch("crud_productos.php", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({accion:"eliminar", id})
+  fetch("acciones_productos.php", {
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({accion:"eliminar",id})
   })
   .then(res=>res.json())
   .then(res=>{
     alert(res.mensaje);
     cargarProductos();
-  });
+  })
+  .catch(err=>console.error(err));
 }
 
 // Cargar tabla al inicio
