@@ -1,5 +1,5 @@
 <?php
-// index.php
+// tpfinal.php
 // Archivo principal - interfaz y lógica cliente (fetch)
 ?>
 <!DOCTYPE html>
