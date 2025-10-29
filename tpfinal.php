@@ -1,256 +1,285 @@
 <?php
-// 🔧 Mostrar errores
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// --- Conexión con base de datos ---
-$host = "localhost";
-$usuario = "adminphp";
-$contrasena = "TuContraseñaSegura";
-$bd = "gestion_productos";
-
-$conn = new mysqli($host, $usuario, $contrasena, $bd);
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-$conn->close();
+// index.php
+// Archivo principal - interfaz y lógica cliente (fetch)
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Gestión de Productos</title>
-
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: #f8fafc;
-      color: #2c3e50;
-      padding: 40px 20px;
-    }
-    h2 {
-      text-align: center;
-      font-weight: 700;
-      color: #1f2d3d;
-      margin-bottom: 40px;
-    }
-    .card {
-      border: none;
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-    }
-    .table-hover tbody tr:hover {
-      background-color: #f0f9ff;
-    }
-    tr[style*="background-color"] {
-      background-color: #fff0f0 !important;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gestión de Productos</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body { font-family: Inter, sans-serif; padding: 28px; background:#f6f8fb; }
+  .bajo-stock { background:#fff0f0; }
+</style>
 </head>
 <body>
+<div class="container">
+  <h2 class="mb-4">📦 Gestión de Productos</h2>
 
-  <div class="container">
-    <h2>📦 Sistema de Gestión de Productos</h2>
-
-    <!-- 📊 Filtros -->
-    <div class="card mb-4">
-      <div class="card-body">
-        <div class="row g-3 align-items-end">
-          <div class="col-md-4">
-            <label class="form-label">Buscar:</label>
-            <input type="text" id="buscar" class="form-control" placeholder="Buscar por nombre...">
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Categoría:</label>
-            <select id="categoria" class="form-select">
-              <option value="todas">Todas</option>
-              <option value="Electrónica">Electrónica</option>
-              <option value="Ropa">Ropa</option>
-              <option value="Alimentos">Alimentos</option>
-              <option value="Hogar">Hogar</option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <button id="btnNuevo" class="btn btn-success w-100">➕ Nuevo Producto</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 📋 Tabla -->
-    <div class="card">
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="tablaProductos"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <div class="mb-3 d-flex gap-2">
+    <input id="buscar" class="form-control" placeholder="Buscar por nombre...">
+    <select id="categoria" class="form-select" style="max-width:220px">
+      <option value="todas">Todas</option>
+      <option>Electrónica</option><option>Ropa</option><option>Alimentos</option><option>Hogar</option>
+    </select>
+    <button id="btnNuevo" class="btn btn-success">➕ Nuevo</button>
   </div>
 
-  <!-- 🪟 Modal -->
-  <div class="modal fade" id="modalProducto" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <form id="formProducto">
-          <div class="modal-header">
-            <h5 class="modal-title">Producto</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead class="table-dark">
+        <tr><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+      </thead>
+      <tbody id="tablaProductos"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="modalProducto" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="formProducto">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModal">Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="productoId">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input id="nombre" class="form-control" required>
           </div>
-          <div class="modal-body">
-            <input type="hidden" id="productoId">
-            <div class="mb-3">
-              <label class="form-label">Nombre</label>
-              <input type="text" id="nombre" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Categoría</label>
-              <input type="text" id="categoriaInput" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Precio</label>
-              <input type="number" id="precio" class="form-control" step="0.01" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Stock</label>
-              <input type="number" id="stock" class="form-control" required>
-            </div>
+          <div class="mb-3">
+            <label class="form-label">Categoría</label>
+            <input id="categoriaInput" class="form-control" required>
           </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">💾 Guardar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <div class="mb-3">
+            <label class="form-label">Precio</label>
+            <input id="precio" type="number" step="0.01" class="form-control" required>
           </div>
-        </form>
-      </div>
+          <div class="mb-3">
+            <label class="form-label">Stock</label>
+            <input id="stock" type="number" class="form-control" required>
+          </div>
+          <div id="formError" class="text-danger" style="display:none"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Guardar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
     </div>
   </div>
+</div>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- ✅ SCRIPT SIMPLIFICADO -->
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const tabla = document.getElementById("tablaProductos");
-    const buscar = document.getElementById("buscar");
-    const categoria = document.getElementById("categoria");
-    const modal = new bootstrap.Modal(document.getElementById("modalProducto"));
-    const form = document.getElementById("formProducto");
+<script>
+(() => {
+  const tabla = document.getElementById('tablaProductos');
+  const buscar = document.getElementById('buscar');
+  const categoria = document.getElementById('categoria');
+  const btnNuevo = document.getElementById('btnNuevo');
+  const modalEl = document.getElementById('modalProducto');
+  const modal = new bootstrap.Modal(modalEl);
+  const form = document.getElementById('formProducto');
+  const productoIdInput = document.getElementById('productoId');
+  const nombreInput = document.getElementById('nombre');
+  const categoriaInput = document.getElementById('categoriaInput');
+  const precioInput = document.getElementById('precio');
+  const stockInput = document.getElementById('stock');
+  const formError = document.getElementById('formError');
 
-    cargarProductos();
+  // carga inicial
+  cargarProductos();
 
-    // Cargar productos
-    function cargarProductos() {
-      const params = new URLSearchParams({
-        buscar: buscar.value,
-        categoria: categoria.value
+  // eventos
+  buscar.addEventListener('input', cargarProductos);
+  categoria.addEventListener('change', cargarProductos);
+  btnNuevo.addEventListener('click', abrirNuevo);
+
+  // abrir modal nuevo
+  function abrirNuevo(){
+    formError.style.display = 'none';
+    productoIdInput.value = '';
+    nombreInput.value = '';
+    categoriaInput.value = '';
+    precioInput.value = '';
+    stockInput.value = '';
+    document.getElementById('tituloModal').innerText = 'Agregar producto';
+    modal.show();
+  }
+
+  // cargar productos según filtros (usa filtrar_productos.php)
+  function cargarProductos(){
+    const params = new URLSearchParams({
+      buscar: buscar.value,
+      categoria: categoria.value
+    });
+    fetch('filtrar_productos.php?' + params.toString())
+      .then(r => r.json())
+      .then(data => {
+        renderTabla(data);
+      })
+      .catch(err => {
+        console.error('Error al cargar productos:', err);
+        tabla.innerHTML = '<tr><td colspan="6" class="text-danger">Error cargando productos (ver consola)</td></tr>';
       });
-      fetch("filtrar_productos.php?" + params.toString())
-        .then(res => res.json())
-        .then(data => mostrarProductos(data));
+  }
+
+  // render tabla
+  function renderTabla(items){
+    tabla.innerHTML = '';
+    if (!items || items.length === 0) {
+      tabla.innerHTML = '<tr><td colspan="6" class="text-muted text-center">Sin resultados</td></tr>';
+      return;
+    }
+    items.forEach(p => {
+      const tr = document.createElement('tr');
+      if (p.stock < 10) tr.classList.add('bajo-stock');
+      tr.innerHTML = `
+        <td>${p.id}</td>
+        <td>${escapeHtml(p.nombre)}</td>
+        <td>${escapeHtml(p.categoria)}</td>
+        <td>$${Number(p.precio).toFixed(2)}</td>
+        <td>${p.stock}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" data-id="${p.id}" data-accion="editar">✏️</button>
+          <button class="btn btn-danger btn-sm" data-id="${p.id}" data-accion="eliminar">🗑️</button>
+        </td>
+      `;
+      tabla.appendChild(tr);
+    });
+
+    // delegación de eventos en la tabla
+    tabla.querySelectorAll('button[data-accion]').forEach(btn => {
+      btn.onclick = (e) => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        const accion = btn.getAttribute('data-accion');
+        if (accion === 'editar') abrirEditar(id);
+        if (accion === 'eliminar') eliminarProducto(id);
+      };
+    });
+  }
+
+  // abrir editar: trae datos y carga el modal
+  function abrirEditar(id){
+    formError.style.display = 'none';
+    fetch('obtener_producto.php?id=' + encodeURIComponent(id))
+      .then(r => r.json())
+      .then(p => {
+        if (p && p.error) {
+          alert('Error: ' + p.error);
+          return;
+        }
+        // cargar campos
+        productoIdInput.value = p.id;
+        nombreInput.value = p.nombre;
+        categoriaInput.value = p.categoria;
+        precioInput.value = p.precio;
+        stockInput.value = p.stock;
+        document.getElementById('tituloModal').innerText = 'Editar producto';
+        modal.show();
+      })
+      .catch(err => {
+        console.error('Error obtener producto:', err);
+        alert('Error al obtener producto (ver consola)');
+      });
+  }
+
+  // eliminar
+  function eliminarProducto(id){
+    if (!confirm('¿Eliminar producto?')) return;
+    fetch('acciones_productos.php', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({accion: 'eliminar', id: id})
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (!res.ok && !res.ok === undefined) {
+        // some older responses may use ok key or not — show mensaje siempre
+      }
+      if (res.mensaje) alert(res.mensaje);
+      cargarProductos();
+    })
+    .catch(err => {
+      console.error('Error eliminar:', err);
+      alert('Error al eliminar (ver consola)');
+    });
+  }
+
+  // submit formulario (insertar o editar)
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    formError.style.display = 'none';
+
+    // validaciones simples
+    const nombre = nombreInput.value.trim();
+    const categoriaVal = categoriaInput.value.trim();
+    const precioVal = parseFloat(precioInput.value);
+    const stockVal = parseInt(stockInput.value);
+
+    if (!nombre || !categoriaVal) {
+      formError.innerText = 'Nombre y categoría son obligatorios';
+      formError.style.display = 'block';
+      return;
+    }
+    if (isNaN(precioVal) || isNaN(stockVal)) {
+      formError.innerText = 'Precio y stock deben ser números válidos';
+      formError.style.display = 'block';
+      return;
     }
 
-    // Mostrar en tabla
-    function mostrarProductos(productos) {
-      tabla.innerHTML = "";
-      if (productos.length === 0) {
-        tabla.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Sin resultados</td></tr>`;
+    const idRaw = productoIdInput.value;
+    const isEdit = idRaw !== '' && idRaw !== null;
+    const payload = {
+      accion: isEdit ? 'editar' : 'insertar',
+      // enviamos id como número solo si edit
+      id: isEdit ? parseInt(idRaw) : undefined,
+      nombre: nombre,
+      categoria: categoriaVal,
+      precio: precioVal,
+      stock: stockVal
+    };
+
+    fetch('acciones_productos.php', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (!res || (res.ok !== undefined && !res.ok)) {
+        alert('Error: ' + (res.mensaje || 'Respuesta inválida del servidor'));
+        console.error('Respuesta server:', res);
         return;
       }
-      productos.forEach(p => {
-        tabla.innerHTML += `
-          <tr>
-            <td>${p.id}</td>
-            <td>${p.nombre}</td>
-            <td>${p.categoria}</td>
-            <td>$${p.precio}</td>
-            <td>${p.stock}</td>
-            <td>
-              <button class="btn btn-warning btn-sm" onclick="editarProducto(${p.id})">✏️</button>
-              <button class="btn btn-danger btn-sm" onclick="eliminarProducto(${p.id})">🗑️</button>
-            </td>
-          </tr>`;
-      });
-    }
-
-    // Buscar y filtrar
-    buscar.addEventListener("input", cargarProductos);
-    categoria.addEventListener("change", cargarProductos);
-
-    // Nuevo producto
-    document.getElementById("btnNuevo").addEventListener("click", () => {
-      form.reset();
-      document.getElementById("productoId").value = "";
-      modal.show();
+      // éxito
+      if (res.mensaje) alert(res.mensaje);
+      modal.hide();
+      cargarProductos();
+    })
+    .catch(err => {
+      console.error('Error guardar:', err);
+      alert('Error al guardar producto (ver consola)');
     });
-
-    // Guardar (insertar o editar)
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const id = document.getElementById("productoId").value;
-      const data = {
-        accion: id ? "editar" : "insertar",
-        id,
-        nombre: document.getElementById("nombre").value,
-        categoria: document.getElementById("categoriaInput").value,
-        precio: document.getElementById("precio").value,
-        stock: document.getElementById("stock").value
-      };
-
-      fetch("acciones_productos.php", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data)
-      })
-      .then(res => res.json())
-      .then(() => {
-        modal.hide();
-        cargarProductos();
-      });
-    });
-
-    // Funciones globales
-    window.editarProducto = (id) => {
-      fetch("obtener_producto.php?id=" + id)
-        .then(res => res.json())
-        .then(p => {
-          document.getElementById("productoId").value = p.id;
-          document.getElementById("nombre").value = p.nombre;
-          document.getElementById("categoriaInput").value = p.categoria;
-          document.getElementById("precio").value = p.precio;
-          document.getElementById("stock").value = p.stock;
-          modal.show();
-        });
-    };
-
-    window.eliminarProducto = (id) => {
-      if (!confirm("¿Seguro que quieres eliminar este producto?")) return;
-      fetch("acciones_productos.php", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({accion: "eliminar", id})
-      })
-      .then(res => res.json())
-      .then(() => cargarProductos());
-    };
   });
-  </script>
+
+  // ayuda: evitar inyección simple en render
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"'`=\/]/g, function(s) {
+      return ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#47;','`':'&#96;','=':'&#61;'
+      })[s];
+    });
+  }
+
+})(); 
+</script>
 </body>
 </html>
